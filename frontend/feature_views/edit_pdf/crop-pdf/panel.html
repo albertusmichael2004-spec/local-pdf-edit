@@ -1,0 +1,25 @@
+<section class="tool-panel" data-title="Crop PDF" id="crop">
+  <div class="panel-intro"><h2>Crop PDF</h2><p>Choose pages, then drag the blue crop frame or enter exact margins in millimeters.</p></div>
+  <div class="dropzone" data-input="cropFile"><input accept="application/pdf,.pdf" hidden id="cropFile" type="file"/><div class="drop-icon">＋</div><strong>Drop PDF</strong><span>The original file is not modified.</span></div>
+  <div class="file-meta hidden" data-filemeta-for="cropFile"></div>
+
+  <div class="crop-editor hidden" id="cropEditor">
+    <div class="crop-settings-card">
+      <label class="field"><span>Pages</span><select id="cropPageMode"><option value="all">All pages</option><option value="custom">Custom pages</option></select></label>
+      <div class="four-col crop-margin-grid"><label class="field"><span>Left mm</span><input id="cropLeft" min="0" step="0.5" type="number" value="0"/></label><label class="field"><span>Top mm</span><input id="cropTop" min="0" step="0.5" type="number" value="0"/></label><label class="field"><span>Right mm</span><input id="cropRight" min="0" step="0.5" type="number" value="0"/></label><label class="field"><span>Bottom mm</span><input id="cropBottom" min="0" step="0.5" type="number" value="0"/></label></div>
+      <p class="helper">Drag an edge/corner to resize the crop area. Drag inside the blue box to move it. The numeric margins stay synchronized.</p>
+    </div>
+
+    <div class="crop-visual-card">
+      <div class="page-workspace-header"><div><strong>Crop preview</strong><span id="cropPreviewLabel">Page 1 sample</span></div></div>
+      <div class="crop-stage"><div class="crop-paper" id="cropPaper"><img id="cropPreviewImage" alt="Crop preview"/><div class="crop-box" id="cropBox"></div></div></div>
+    </div>
+
+    <div class="page-workspace-wrap hidden" id="cropWorkspaceWrap">
+      <div class="page-workspace-header"><div><strong>Select pages to crop</strong><span>Check pages below. The first selected page becomes the crop preview sample.</span></div><span id="cropSelectionCount">0 selected</span></div>
+      <div class="page-workspace scrollable-page-box crop-page-box" id="cropPageWorkspace"></div>
+    </div>
+  </div>
+  <button class="btn primary" id="cropBtn">Crop PDF</button>
+  <div class="status hidden" id="cropStatus"></div>
+</section>

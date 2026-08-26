@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Local PDF Workbench</title>
+<link href="/frontend/assets/images/app-logo-64.png" rel="icon" type="image/png"/>
+
+<link href="/frontend/assets/css/base.css" rel="stylesheet"/><link href="/frontend/assets/css/layout.css" rel="stylesheet"/><link href="/frontend/assets/css/components.css" rel="stylesheet"/><link href="/frontend/assets/css/features.css" rel="stylesheet"/></head>
+<body>
+<div class="app-frame">
+<aside class="sidebar">
+<div class="brand-row">
+<div class="brand-mark"><img alt="PDF Workbench logo" src="/frontend/assets/images/app-logo-128.png"/></div>
+<div>
+<div class="brand-name">Local PDF Workbench</div>
+<div class="brand-sub">Private desktop PDF tools</div>
+</div>
+</div>
+<div class="system-badge" id="systemBadge">Checking local engines…</div>
+<nav aria-label="PDF tools" class="tool-nav">
+<div class="nav-caption">QUICK TOOLS</div>
+<button class="nav-tool active" data-tool="merge">Merge PDF</button>
+<button class="nav-tool" data-tool="split">Split PDF</button>
+<div class="category open">
+<button class="category-toggle" type="button">
+<span>Edit PDF</span><span class="chevron">⌄</span>
+</button>
+<div class="submenu">
+<button class="nav-tool" data-tool="remove-pages">Remove pages</button>
+<button class="nav-tool" data-tool="extract-pages">Extract pages</button>
+<button class="nav-tool" data-tool="organize">Organize PDF</button>
+<button class="nav-tool" data-tool="compress">Compress PDF</button>
+<button class="nav-tool" data-tool="ocr">OCR PDF</button>
+<button class="nav-tool" data-tool="rotate">Rotate PDF</button>
+<button class="nav-tool" data-tool="watermark">Add watermark</button>
+<button class="nav-tool" data-tool="crop">Crop PDF</button>
+</div>
+</div>
+<div class="category">
+<button class="category-toggle" type="button">
+<span>Convert to PDF</span><span class="chevron">⌄</span>
+</button>
+<div class="submenu">
+<button class="nav-tool" data-tool="jpg-to-pdf">JPG to PDF</button>
+<button class="nav-tool" data-tool="word-to-pdf">Word to PDF</button>
+<button class="nav-tool" data-tool="ppt-to-pdf">PowerPoint to PDF</button>
+<button class="nav-tool" data-tool="excel-to-pdf">Excel to PDF</button>
+<button class="nav-tool" data-tool="html-to-pdf">HTML to PDF</button>
+</div>
+</div>
+<div class="category">
+<button class="category-toggle" type="button">
+<span>Convert from PDF</span><span class="chevron">⌄</span>
+</button>
+<div class="submenu">
+<button class="nav-tool" data-tool="pdf-to-jpg">PDF to JPG</button>
+<button class="nav-tool" data-tool="pdf-to-word">PDF to Word</button>
+<button class="nav-tool" data-tool="pdf-to-ppt">PDF to PowerPoint</button>
+<button class="nav-tool" data-tool="pdf-to-excel">PDF to Excel</button>
+</div>
+</div>
+<div class="category">
+<button class="category-toggle" type="button">
+<span>PDF Security</span><span class="chevron">⌄</span>
+</button>
+<div class="submenu">
+<button class="nav-tool" data-tool="unlock">Unlock PDF</button>
+<button class="nav-tool" data-tool="protect">Protect PDF</button>
+<button class="nav-tool" data-tool="sha256">SHA-256 PDF</button>
+<button class="nav-tool" data-tool="sha256-compare">Compare SHA-256</button>
+<button class="nav-tool" data-tool="compare-pdf">Compare PDF</button>
+</div>
+</div>
+</nav>
+<div class="privacy-note">
+<strong>Local processing</strong>
+<span>Files are processed on this computer and temporary workspaces are deleted after each operation.</span>
+</div>
+</aside>
+<main class="workspace">
+<header class="workspace-header">
+<div>
+<span class="eyebrow">LOCAL • PRIVATE • DRAG &amp; DROP</span>
+<h1 id="toolTitle">Merge PDF</h1>
+</div>
+<div class="header-pill">Windows desktop-ready</div>
+</header>
+<!-- Merge -->
+
+<!-- Split -->
+
+<!-- Compress -->
+
+<!-- Simple edit tools -->
+
+
+
+
+
+
+
+<!-- Convert to PDF -->
+
+
+
+
+
+<!-- Convert from PDF -->
+
+
+
+
+<!-- Security -->
+
+
+
+
+
+<div id="featureHost"></div><footer class="workspace-footer"><span>Local PDF Workbench v4.1</span><span>FastAPI • PyMuPDF • pypdf • Ghostscript • Tesseract • LibreOffice • pywebview</span></footer>
+</main>
+</div>
+
+<script src="/frontend/pages/main/app_shell.js" type="module"></script></body>
+</html>

@@ -1,0 +1,20 @@
+<section class="tool-panel" data-title="Rotate PDF" id="rotate">
+  <div class="panel-intro"><h2>Rotate PDF</h2><p>Rotate every page at once, or choose custom pages visually.</p></div>
+  <div class="dropzone" data-input="rotateFile"><input accept="application/pdf,.pdf" hidden id="rotateFile" type="file"/><div class="drop-icon">＋</div><strong>Drop PDF</strong><span>Choose All pages or Custom pages below.</span></div>
+  <div class="file-meta hidden" data-filemeta-for="rotateFile"></div>
+
+  <div class="rotate-controls hidden" id="rotateControls">
+    <div class="two-col compact-fields">
+      <label class="field"><span>Pages</span><select id="rotatePageMode"><option value="all">All pages</option><option value="custom">Custom pages</option></select></label>
+      <div class="field"><span>Direction</span><div class="segmented-buttons" id="rotateDirection"><button class="segment active" type="button" data-angle="270">↶ Rotate left</button><button class="segment" type="button" data-angle="90">↷ Rotate right</button></div></div>
+    </div>
+  </div>
+
+  <div class="page-workspace-wrap hidden" id="rotateWorkspaceWrap">
+    <div class="page-workspace-header"><div><strong>Select pages to rotate</strong><span>Click page thumbnails. Selected pages are outlined.</span></div><span id="rotateSelectionCount">0 selected</span></div>
+    <div class="page-workspace scrollable-page-box selection-page-box" id="rotatePageWorkspace"></div>
+  </div>
+
+  <button class="btn primary" id="rotateBtn">Rotate PDF</button>
+  <div class="status hidden" id="rotateStatus"></div>
+</section>

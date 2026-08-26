@@ -1,0 +1,25 @@
+<section class="tool-panel" data-title="Organize PDF" id="organize">
+  <div class="panel-intro">
+    <h2>Organize PDF</h2>
+    <p>Reorder pages by typing a page order or dragging page thumbnails. You can also add blank pages, rotate individual pages, and remove pages before export.</p>
+  </div>
+  <div class="dropzone" data-input="organizeFile">
+    <input accept="application/pdf,.pdf" hidden id="organizeFile" type="file"/>
+    <div class="drop-icon">＋</div><strong>Drop PDF</strong><span>Upload once, then arrange the pages below.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="organizeFile"></div>
+
+  <div class="editor-toolbar hidden" id="organizeToolbar">
+    <label class="field grow"><span>New page order</span><input id="organizeOrder" placeholder="3,1,2,4-8" type="text"/></label>
+    <button class="btn secondary" id="applyOrganizeOrder" type="button">Apply order</button>
+    <button class="btn secondary" id="resetOrganizeOrder" type="button">Reset pages</button>
+  </div>
+
+  <div class="page-workspace-wrap hidden" id="organizeWorkspaceWrap">
+    <div class="page-workspace-header"><div><strong>Page arrangement</strong><span>Drag pages to reorder. Hover a page for blank-page, rotate, and delete controls.</span></div><span id="organizePageCount"></span></div>
+    <div class="page-workspace scrollable-page-box organize-page-box" id="organizePageWorkspace"></div>
+  </div>
+
+  <button class="btn primary" id="organizeBtn">Export organized PDF</button>
+  <div class="status hidden" id="organizeStatus"></div>
+</section>

@@ -1,0 +1,33 @@
+<section class="tool-panel" data-title="Add watermark" id="watermark">
+  <div class="panel-intro"><h2>Add watermark</h2><p>Stage one or more text watermarks, apply them to all pages or selected pages, preview the result, then export once.</p></div>
+  <div class="dropzone" data-input="watermarkFile"><input accept="application/pdf,.pdf" hidden id="watermarkFile" type="file"/><div class="drop-icon">＋</div><strong>Drop PDF</strong><span>All processing and previews remain local.</span></div>
+  <div class="file-meta hidden" data-filemeta-for="watermarkFile"></div>
+
+  <div class="watermark-controls hidden" id="watermarkControls">
+    <div class="two-col">
+      <label class="field"><span>Watermark text</span><input id="watermarkText" placeholder="CONFIDENTIAL"/></label>
+      <label class="field"><span>Pages</span><select id="watermarkPageMode"><option value="all">All pages</option><option value="custom">Custom pages</option></select></label>
+    </div>
+    <div class="four-col watermark-options">
+      <label class="field"><span>Font</span><select id="watermarkFont"><option value="arial">Arial</option><option value="calibri">Calibri</option><option value="times-new-roman">Times New Roman</option><option value="segoe-ui">Segoe UI</option><option value="georgia">Georgia</option><option value="verdana">Verdana</option><option value="trebuchet-ms">Trebuchet MS</option><option value="courier-new">Courier New</option><option value="montserrat">Montserrat</option><option value="helvetica">Helvetica</option></select></label>
+      <label class="field"><span>Font size</span><input id="watermarkFontSize" max="180" min="8" type="number" value="42"/></label>
+      <label class="field"><span>Opacity</span><input id="watermarkOpacity" max="1" min="0.05" step="0.05" type="number" value="0.22"/></label>
+      <label class="field"><span>Rotation</span><select id="watermarkRotation"><option value="45">45°</option><option value="315">-45°</option><option value="0">0°</option><option value="90">90°</option></select></label>
+    </div>
+    <div class="custom-font-row">
+      <div><strong>Custom font</strong><span>Upload a .ttf or .otf once. It is stored in the local data/fonts folder and becomes available in the font list.</span></div>
+      <input accept=".ttf,.otf,font/ttf,font/otf" id="watermarkFontFile" type="file"/>
+      <button class="btn secondary small" id="uploadWatermarkFont" type="button">Save custom font</button>
+    </div>
+    <div class="action-row watermark-add-row"><button class="btn secondary" id="clearWatermarks" type="button">Clear staged watermarks</button><button class="btn primary" id="stageWatermark" type="button">Add watermark to selection</button></div>
+  </div>
+
+  <div class="watermark-preview hidden" id="watermarkPreviewArea">
+    <div class="page-workspace-header"><div><strong>Watermark preview</strong><span id="watermarkPreviewHint">Showing page 1 as an example for All pages.</span></div><span id="watermarkSelectionCount"></span></div>
+    <div class="watermark-all-sample" id="watermarkAllSample"><div class="watermark-sample-paper"><img id="watermarkSampleImage" alt="Watermark sample page"/><div id="watermarkSampleOverlays"></div></div><span>Page 1 sample</span></div>
+    <div class="page-workspace scrollable-page-box watermark-page-box hidden" id="watermarkPageWorkspace"></div>
+    <div class="staged-watermarks hidden" id="stagedWatermarks"></div>
+    <button class="btn primary full" id="watermarkExportBtn">Export PDF</button>
+  </div>
+  <div class="status hidden" id="watermarkStatus"></div>
+</section>

@@ -1,0 +1,40 @@
+# Local Python environment
+.venv/
+venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local environment / secrets
+.env
+.env.*
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime scratch/output folders
+output/
+outputs/
+temp/
+tmp/
+*.tmp
+*.log
+
+# Portable build artifacts
+build/
+dist/
+release/
+
+# PyInstaller transient files
+*.spec.bak
+
+# User-uploaded custom watermark fonts
+/data/fonts/*.ttf
+/data/fonts/*.otf

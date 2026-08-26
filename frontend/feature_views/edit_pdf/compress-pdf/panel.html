@@ -1,0 +1,12 @@
+<section class="tool-panel" data-title="Compress PDF" id="compress">
+<div class="panel-intro"><h2>Compress PDF</h2><p>Choose a quality profile or aim for a target file-size range.</p></div>
+<div class="dropzone" data-input="compressFile"><input accept="application/pdf,.pdf" hidden="" id="compressFile" type="file"/><div class="drop-icon">＋</div><strong>Drop a PDF here or click to browse</strong><span>Ghostscript runs locally.</span></div>
+<div class="file-meta hidden" id="compressFileMeta"></div>
+<div class="profile-grid" id="compressionProfiles">
+<label class="profile danger"><input name="compressionMode" type="radio" value="extreme"/><span class="profile-title">Extreme compression</span><span>Smallest output, more visible image quality loss.</span><small>~72 DPI</small></label>
+<label class="profile selected"><input checked="" name="compressionMode" type="radio" value="recommended"/><span class="profile-title">Recommended</span><span>Good quality and meaningful compression.</span><small>~150 DPI</small></label>
+<label class="profile"><input name="compressionMode" type="radio" value="less"/><span class="profile-title">Less compression</span><span>High quality with lighter size reduction.</span><small>~220 DPI</small></label>
+<label class="profile custom-profile"><input name="compressionMode" type="radio" value="custom"/><span class="profile-title">Custom target range</span><span>Aim for a size window rather than an exact byte count.</span><div class="two-col"><label class="field"><span>Min MB</span><input id="targetMinMb" min="0.05" placeholder="1.5" step="0.05" type="number"/></label><label class="field"><span>Max MB</span><input id="targetMaxMb" min="0.05" placeholder="2.0" step="0.05" type="number"/></label></div></label>
+</div>
+<button class="btn primary" id="compressBtn">Compress PDF</button><div class="status hidden" id="compressStatus"></div>
+</section>

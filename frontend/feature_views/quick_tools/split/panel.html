@@ -1,0 +1,41 @@
+<section class="tool-panel" data-title="Split PDF" id="split">
+<div class="panel-intro"><h2>Split PDF</h2><p>Split by custom range, fixed page count, or approximate output file size.</p></div>
+<div class="dropzone" data-input="splitFile">
+<input accept="application/pdf,.pdf" hidden="" id="splitFile" type="file"/>
+<div class="drop-icon">＋</div><strong>Drop a PDF here or click to browse</strong><span id="splitHint">The page preview appears after selection.</span>
+</div>
+<div class="file-meta hidden" id="splitFileMeta"></div>
+<div class="split-layout">
+<div class="split-preview-card">
+<div class="preview-heading"><span id="splitPreviewLabel">Range 1</span><span id="splitPageCount">No PDF selected</span></div>
+<div class="preview-stage">
+<div class="page-preview"><div class="thumb-wrap"><img alt="From page preview" id="splitFromPreview"/></div><span id="splitFromLabel">From page</span></div>
+<div class="preview-connector">•••</div>
+<div class="page-preview"><div class="thumb-wrap"><img alt="To page preview" id="splitToPreview"/></div><span id="splitToLabel">To page</span></div>
+</div>
+</div>
+<div class="split-controls-card">
+<div class="mode-tabs" role="tablist">
+<button class="mode-tab active" data-split-mode="range">Range</button>
+<button class="mode-tab" data-split-mode="pages">Pages</button>
+<button class="mode-tab" data-split-mode="size">Size</button>
+</div>
+<div class="split-mode-body active" id="splitRangeMode">
+<div class="section-label">Custom ranges</div>
+<div class="range-list" id="rangeRows"></div>
+<button class="btn small secondary" id="addRangeBtn" type="button">＋ Add range</button>
+<label class="checkbox-row"><input id="mergeRanges" type="checkbox"/> Merge all selected ranges into one PDF</label>
+</div>
+<div class="split-mode-body" id="splitPagesMode">
+<label class="field"><span>Pages per output PDF</span><input id="splitEveryN" min="1" step="1" type="number" value="5"/></label>
+<p class="helper">Example: 5 creates pages 1–5, 6–10, 11–15, and so on.</p>
+</div>
+<div class="split-mode-body" id="splitSizeMode">
+<label class="field"><span>Maximum target size per PDF (MB)</span><input id="splitMaxSize" min="0.05" step="0.05" type="number" value="5"/></label>
+<p class="helper">Best-effort grouping. A single page larger than the target cannot be split further without changing that page.</p>
+</div>
+<button class="btn primary full" id="splitBtn">Split PDF</button>
+</div>
+</div>
+<div class="status hidden" id="splitStatus"></div>
+</section>

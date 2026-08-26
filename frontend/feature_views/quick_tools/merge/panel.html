@@ -1,0 +1,10 @@
+<section class="tool-panel active" data-title="Merge PDF" id="merge">
+<div class="panel-intro"><h2>Merge PDF</h2><p>Add multiple PDF files and drag them into the exact output order.</p></div>
+<div class="dropzone" data-append="true" data-input="mergeFiles">
+<input accept="application/pdf,.pdf" hidden="" id="mergeFiles" multiple="" type="file"/>
+<div class="drop-icon">＋</div><strong>Drop PDFs here or click to browse</strong><span>Drop again to add more files.</span>
+</div>
+<div class="sortable-list" id="mergeList"></div>
+<div class="action-row"><button class="btn secondary" id="clearMergeBtn">Clear</button><button class="btn primary" id="mergeBtn">Merge PDF</button></div>
+<div class="status hidden" id="mergeStatus"></div>
+</section>

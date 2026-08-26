@@ -1,0 +1,10 @@
+[project]
+name = "local-pdf-workbench"
+version = "4.1.0"
+description = "Private local desktop PDF utilities powered by FastAPI and PyWebView."
+requires-python = ">=3.11,<3.14"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
