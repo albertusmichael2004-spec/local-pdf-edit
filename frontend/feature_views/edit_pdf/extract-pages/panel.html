@@ -1,1 +1,23 @@
-<section class="tool-panel" data-title="Extract pages" id="extract-pages"><div class="panel-intro"><h2>Extract pages</h2><p>Create a new PDF from selected pages.</p></div><div class="dropzone" data-input="extractFile"><input accept="application/pdf,.pdf" hidden="" id="extractFile" type="file"/><div class="drop-icon">＋</div><strong>Drop PDF</strong><span>Order is preserved from your page expression.</span></div><div class="file-meta hidden" data-filemeta-for="extractFile"></div><label class="field"><span>Pages to extract</span><input id="extractPagesInput" placeholder="1-3,7,10-12" type="text"/></label><button class="btn primary" id="extractPagesBtn">Extract pages</button><div class="status hidden" id="extractPagesStatus"></div></section>
+<section class="tool-panel" data-title="Extract pages" id="extract-pages">
+  <div class="panel-intro">
+    <h2>Extract pages</h2>
+    <p>Select page thumbnails to create a new PDF in the original page order.</p>
+  </div>
+  <div class="dropzone" data-input="extractFile">
+    <input accept="application/pdf,.pdf" hidden id="extractFile" type="file"/>
+    <div class="drop-icon">＋</div><strong>Drop PDF</strong><span>Upload once, then select pages below.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="extractFile"></div>
+  <div class="page-workspace-wrap hidden" id="extractWorkspaceWrap">
+    <div class="page-workspace-header">
+      <div><strong>Pages to extract</strong><span>Click thumbnails or check boxes to select pages.</span></div>
+      <span id="extractSelectionCount">0 selected</span>
+    </div>
+    <div class="page-workspace scrollable-page-box" id="extractPageWorkspace"></div>
+  </div>
+  <label class="field"><span>Page selection</span>
+    <input id="extractPagesInput" placeholder="1-3,7,10-12" type="text"/>
+  </label>
+  <button class="btn primary" id="extractPagesBtn">Extract selected pages</button>
+  <div class="status hidden" id="extractPagesStatus"></div>
+</section>

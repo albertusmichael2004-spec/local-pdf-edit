@@ -12,6 +12,7 @@ export const FEATURES = {
   crop: { title: "Crop PDF", view: "/frontend/feature_views/edit_pdf/crop-pdf/panel.html", controller: "/frontend/feature_views/edit_pdf/crop-pdf/controller.js" },
 
   "jpg-to-pdf": { title: "JPG to PDF", view: "/frontend/feature_views/convert_to_pdf/jpg-to-pdf/panel.html", controller: "/frontend/feature_views/convert_to_pdf/jpg-to-pdf/controller.js" },
+  "jpg-to-text-to-pdf": {title: "Image OCR to PDF / Word", view: "/frontend/feature_views/convert_to_pdf/jpg-to-text-to-pdf/panel.html", controller: "/frontend/feature_views/convert_to_pdf/jpg-to-text-to-pdf/controller.js",},
   "word-to-pdf": { title: "Word to PDF", view: "/frontend/feature_views/convert_to_pdf/word-to-pdf/panel.html", controller: "/frontend/feature_views/convert_to_pdf/word-to-pdf/controller.js" },
   "ppt-to-pdf": { title: "PowerPoint to PDF", view: "/frontend/feature_views/convert_to_pdf/powerpoint-to-pdf/panel.html", controller: "/frontend/feature_views/convert_to_pdf/powerpoint-to-pdf/controller.js" },
   "excel-to-pdf": { title: "Excel to PDF", view: "/frontend/feature_views/convert_to_pdf/excel-to-pdf/panel.html", controller: "/frontend/feature_views/convert_to_pdf/excel-to-pdf/controller.js" },

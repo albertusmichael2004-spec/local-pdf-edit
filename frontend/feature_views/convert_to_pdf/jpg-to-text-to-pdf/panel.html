@@ -1,0 +1,45 @@
+<section class="tool-panel" data-title="Image OCR to PDF / Word" id="jpg-to-text-to-pdf">
+  <div class="panel-intro">
+    <h2>Image OCR to PDF / Word</h2>
+    <p>Extract editable text from ordered images, then export the result as PDF or Word.</p>
+  </div>
+  <div class="dropzone" data-append="true" data-input="imageOcrFiles">
+    <input accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,.jpg,.jpeg,.png,.webp,.bmp,.tif,.tiff" hidden id="imageOcrFiles" multiple type="file"/>
+    <div class="drop-icon">＋</div>
+    <strong>Drop images</strong>
+    <span>Drop again to append more images.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="imageOcrFiles"></div>
+
+  <div class="page-workspace-wrap hidden" id="imageOcrWorkspaceWrap">
+    <div class="page-workspace-header">
+      <div><strong>Page arrangement</strong><span>Drag images to reorder them. Hover a page to delete it.</span></div>
+      <span id="imageOcrPageCount">0 pages</span>
+    </div>
+    <div class="page-workspace scrollable-page-box" id="imageOcrWorkspace"></div>
+  </div>
+
+  <div class="four-col compact-fields">
+    <label class="field"><span>Output format</span><select id="imageOcrOutputFormat">
+      <option selected value="pdf">PDF</option><option value="docx">Word (.docx)</option>
+    </select></label>
+    <label class="field"><span>OCR language</span><select id="imageOcrLanguage">
+      <option selected value="auto">Auto (Indonesian)</option>
+      <option value="ind">Indonesian</option><option value="eng">English</option>
+    </select></label>
+    <label class="field"><span>OCR quality</span><select id="imageOcrQuality">
+      <option value="fast">Fast</option><option selected value="accurate">Accurate</option>
+      <option value="maximum">Maximum accuracy</option>
+    </select></label>
+    <label class="field"><span>PDF layout</span><select id="imageOcrLayoutMode">
+      <option selected value="preserve">Preserve original layout</option>
+      <option value="editable">Editable text</option>
+    </select></label>
+  </div>
+  <p class="helper" id="imageOcrLayoutHint">Preserve keeps each source image and adds aligned searchable text.</p>
+  <div class="action-row">
+    <button class="btn secondary" id="imageOcrClearButton" type="button">Clear</button>
+    <button class="btn primary" id="imageOcrExportButton" type="button">Extract text and export</button>
+  </div>
+  <div class="status hidden" id="imageOcrStatus"></div>
+</section>

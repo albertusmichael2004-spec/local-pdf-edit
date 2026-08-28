@@ -47,3 +47,139 @@ def test_html_to_pdf_fallback_or_weasyprint(tmp_path: Path):
     engine = html_to_pdf(source, output)
     assert output.read_bytes().startswith(b"%PDF-")
     assert engine
+
+
+def test_image_ocr_export_pdf_and_docx(
+    tmp_path: Path,
+    monkeypatch,
+):
+    import backend.services.convert_to_pdf.jpg_to_text_to_pdf.service as image_ocr_service
+    
+    from backend.services.shared.ocr.models import (
+        OCRPage,
+        OCRWord,
+    )
+
+    image_a = tmp_path / "page_a.png"
+    image_b = tmp_path / "page_b.png"
+
+    for path in (
+        image_a,
+        image_b,
+    ):
+        image = Image.new(
+            "RGB",
+            (240, 120),
+            "white",
+        )
+
+        image.save(path)
+        image.close()
+
+    monkeypatch.setattr(
+        image_ocr_service,
+        "find_tesseract",
+        lambda: "tesseract-test",
+    )
+
+    def fake_recognize_images(
+        image_paths,
+        tesseract_executable,
+        language,
+        quality,
+    ):
+        results = []
+
+        for index, path in enumerate(
+            image_paths,
+            start=1,
+        ):
+            results.append(
+                OCRPage(
+                    source_path=path,
+                    source_width=240,
+                    source_height=120,
+                    ocr_width=240,
+                    ocr_height=120,
+                    words=[
+                        OCRWord(
+                            text=f"Page {index}",
+                            confidence=98.0,
+                            left=20,
+                            top=20,
+                            width=70,
+                            height=18,
+                            block=1,
+                            paragraph=1,
+                            line=1,
+                        ),
+                        OCRWord(
+                            text="OCR",
+                            confidence=97.0,
+                            left=100,
+                            top=20,
+                            width=40,
+                            height=18,
+                            block=1,
+                            paragraph=1,
+                            line=1,
+                        ),
+                    ],
+                    confidence=97.5,
+                    psm=3,
+                    variant="test",
+                )
+            )
+
+        return results
+
+    monkeypatch.setattr(
+        image_ocr_service,
+        "recognize_images",
+        fake_recognize_images,
+    )
+
+    pdf_output = tmp_path / "ocr_output.pdf"
+
+    pdf_count = (
+        image_ocr_service
+        .jpg_to_text_to_pdf_or_word(
+            image_paths=[
+                image_a,
+                image_b,
+            ],
+            output_path=pdf_output,
+            output_format="pdf",
+            language="eng",
+            quality="accurate",
+            layout_mode="preserve",
+        )
+    )
+
+    assert pdf_count == 2
+    assert pdf_output.exists()
+    assert pdf_output.stat().st_size > 0
+
+    with pdf_output.open("rb") as handle:
+        assert handle.read(5) == b"%PDF-"
+
+    docx_output = tmp_path / "ocr_output.docx"
+
+    docx_count = (
+        image_ocr_service
+        .jpg_to_text_to_pdf_or_word(
+            image_paths=[
+                image_a,
+                image_b,
+            ],
+            output_path=docx_output,
+            output_format="docx",
+            language="eng",
+            quality="accurate",
+            layout_mode="editable",
+        )
+    )
+
+    assert docx_count == 2
+    assert docx_output.exists()
+    assert docx_output.stat().st_size > 0

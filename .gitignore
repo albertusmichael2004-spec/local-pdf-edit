@@ -38,3 +38,7 @@ release/
 # User-uploaded custom watermark fonts
 /data/fonts/*.ttf
 /data/fonts/*.otf
+
+# Local OCR training/evaluation data
+training/ocr/private/
+training/ocr/results/

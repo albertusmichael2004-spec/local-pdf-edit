@@ -35,6 +35,27 @@ The main goals are:
 - Keep portable distribution available for users who do not have Python or VS Code.
 
 
+2A. COPYRIGHT AND USAGE NOTICE
+------------------------------
+
+Copyright © 2026 Albertus Michael. All rights reserved.
+
+This repository and its source code are made publicly available for viewing,
+educational reference, and portfolio purposes.
+
+Unless explicitly permitted in writing by the copyright holder, no permission
+is granted to copy, reproduce, modify, redistribute, sublicense, sell,
+commercially exploit, or incorporate substantial portions of this project's
+original source code into another product or service.
+
+Third-party libraries, frameworks, tools, and external software used by this
+project remain subject to their respective licenses and terms.
+
+The availability of this source code on a public GitHub repository does not,
+by itself, grant a license to reuse or redistribute the project's original
+source code.
+
+
 3. HIGH-LEVEL ARCHITECTURE
 --------------------------
 

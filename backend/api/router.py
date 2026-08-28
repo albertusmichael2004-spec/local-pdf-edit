@@ -11,6 +11,9 @@ from backend.api.routers import (
     system,
 )
 
+from backend.api.routers.convert_to_pdf import (
+    router as convert_to_pdf_router,
+)
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(system.router)

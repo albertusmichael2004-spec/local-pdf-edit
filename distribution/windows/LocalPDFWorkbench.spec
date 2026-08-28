@@ -12,6 +12,9 @@ ICON = FRONTEND / "assets" / "images" / "app.ico"
 
 hiddenimports: list[str] = []
 datas = [(str(FRONTEND), "frontend")]
+INDONESIAN_OCR = ROOT / "data" / "ind.traineddata"
+if INDONESIAN_OCR.exists():
+    datas.append((str(INDONESIAN_OCR), "data"))
 binaries = []
 
 # Explicit collection keeps the portable Windows build robust for packages that
