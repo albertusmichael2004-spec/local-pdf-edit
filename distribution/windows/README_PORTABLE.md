@@ -1,6 +1,6 @@
 # Portable Windows Build
 
-This folder contains **build tooling only**. It does not change the normal live-source launcher workflow.
+This folder contains the portable build tooling and the generated `release\LocalPDFWorkbench` deliverable.
 
 ## Goal
 
@@ -14,6 +14,7 @@ release/
 ```
 
 Copy/share the **whole `LocalPDFWorkbench` folder**. The destination PC does not need VS Code or a Python installation.
+Double-click `LocalPDFWorkbench.exe`; the app opens with normal user permissions.
 
 ## Build on the Windows development PC
 

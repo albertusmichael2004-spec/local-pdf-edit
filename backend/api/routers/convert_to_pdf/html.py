@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
@@ -34,7 +35,8 @@ async def api_html_to_pdf(
             f"{Path(filename).stem}.pdf"
         )
 
-        engine = html_to_pdf(
+        engine = await run_in_threadpool(
+            html_to_pdf,
             input_path,
             output,
         )

@@ -6,6 +6,7 @@ from pathlib import Path
 import fitz
 
 from backend.core.errors import ConversionError
+from backend.core.progress import report_fraction, report_progress
 
 def pdf_to_pptx(input_path: Path, output_path: Path, dpi: int = 150) -> int:
     try:
@@ -29,7 +30,7 @@ def pdf_to_pptx(input_path: Path, output_path: Path, dpi: int = 150) -> int:
             prs.slide_height = Inches(height_in)
             blank = prs.slide_layouts[6]
             scale = dpi / 72.0
-            for page in doc:
+            for index, page in enumerate(doc, start=1):
                 slide = prs.slides.add_slide(blank)
                 pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
                 image_stream = BytesIO(pix.tobytes("png"))
@@ -46,10 +47,12 @@ def pdf_to_pptx(input_path: Path, output_path: Path, dpi: int = 150) -> int:
                     top = 0
                     left = int((prs.slide_width - pic_w) / 2)
                 slide.shapes.add_picture(image_stream, left, top, width=pic_w, height=pic_h)
+                report_fraction("Building PowerPoint slides", index, doc.page_count, 24, 90)
             # Remove the initial default slide if PowerPoint implementation created one.
             if len(prs.slides) > doc.page_count:
                 slide_id = prs.slides._sldIdLst[0]
                 prs.slides._sldIdLst.remove(slide_id)
+            report_progress("Saving PowerPoint presentation", percent=94)
             prs.save(output_path)
             return doc.page_count
     except ConversionError:

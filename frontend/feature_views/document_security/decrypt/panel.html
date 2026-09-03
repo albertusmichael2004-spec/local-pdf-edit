@@ -1,0 +1,16 @@
+<section class="tool-panel" data-title="Decrypt File / Archive" id="document-decrypt">
+  <div class="panel-intro">
+    <h2>Decrypt File / Archive</h2>
+    <p>Open a password-protected ZIP or 7z when you know its password. A single original file is returned directly; multiple files are returned together in a normal ZIP.</p>
+  </div>
+  <div class="dropzone" data-input="decryptArchiveFile">
+    <input accept="application/zip,application/x-7z-compressed,.zip,.7z" hidden id="decryptArchiveFile" type="file"/>
+    <div class="drop-icon">＋</div><strong>Drop encrypted ZIP or 7z</strong>
+    <span>Supports archives created by Password Protect, AES-256 Encrypt, and All in One.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="decryptArchiveFile"></div>
+  <label class="field"><span>Archive password</span><input autocomplete="current-password" id="decryptArchivePassword" type="password"/></label>
+  <p class="helper security-note">No application file-size limit. Processing depends on available disk space and memory; unsafe archive paths, links, excessive entries, and duplicate paths remain blocked.</p>
+  <button class="btn primary" id="decryptArchiveBtn">Decrypt and download</button>
+  <div class="status hidden" id="decryptArchiveStatus"></div>
+</section>

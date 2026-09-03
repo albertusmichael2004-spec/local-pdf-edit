@@ -9,6 +9,8 @@ class CompressionProfile:
     dpi: int
     jpeg_quality: int
     mono_dpi: int
+    jpeg_qfactor: float = 0.5
+    force_jpeg_reencode: bool = False
 
 
 @dataclass(frozen=True)
@@ -30,7 +32,25 @@ class CompressionResult:
 
 
 PRESETS: dict[str, CompressionProfile] = {
-    "extreme": CompressionProfile(dpi=72, jpeg_quality=42, mono_dpi=180),
-    "recommended": CompressionProfile(dpi=150, jpeg_quality=74, mono_dpi=300),
-    "less": CompressionProfile(dpi=220, jpeg_quality=88, mono_dpi=450),
+    "extreme": CompressionProfile(
+        dpi=150,
+        jpeg_quality=42,
+        mono_dpi=300,
+        jpeg_qfactor=0.90,
+        force_jpeg_reencode=True,
+    ),
+    "recommended": CompressionProfile(
+        dpi=150,
+        jpeg_quality=74,
+        mono_dpi=300,
+        jpeg_qfactor=0.55,
+        force_jpeg_reencode=True,
+    ),
+    "less": CompressionProfile(
+        dpi=220,
+        jpeg_quality=88,
+        mono_dpi=450,
+        jpeg_qfactor=0.35,
+        force_jpeg_reencode=False,
+    ),
 }

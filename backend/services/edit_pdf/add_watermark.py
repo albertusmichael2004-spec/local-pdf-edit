@@ -8,6 +8,7 @@ import uuid
 import fitz
 
 from backend.core.errors import EditingError
+from backend.core.progress import report_fraction, report_progress
 from backend.services.edit_pdf.watermark_fonts import resolve_font
 
 
@@ -69,11 +70,14 @@ def add_text_watermarks(
         with fitz.open(input_path) as doc:
             if doc.needs_pass:
                 raise EditingError("Encrypted PDF. Unlock it before editing.")
+            report_progress("Preparing watermark rules", percent=22, detail=f"{len(rules)} rule(s)")
             for index, page in enumerate(doc):
                 for rule in rules:
                     if rule.pages_zero_based is not None and index not in rule.pages_zero_based:
                         continue
                     _insert_rule(page, rule)
+                report_fraction("Applying watermark to pages", index + 1, doc.page_count, 25, 88)
+            report_progress("Saving watermarked PDF", percent=92)
             doc.save(output_path, garbage=4, deflate=True)
             return doc.page_count
     except EditingError:

@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 
 from backend.core.errors import CompressionError
+from backend.core.progress import report_fraction, report_progress
 from backend.services.shared.compression.ghostscript import profile_from_strength, run_ghostscript
 from backend.services.shared.compression.models import CompressionResult, PRESETS
 from backend.services.shared.compression.optimizer import optimize_structure
@@ -43,11 +44,19 @@ def compress_preset(
     if optimized:
         candidates.append(optimized)
 
+    report_progress("Compressing PDF with Ghostscript", percent=42, detail=mode)
     run_ghostscript(input_path, gs_candidate, PRESETS[mode], timeout_seconds)
     if gs_candidate.exists() and gs_candidate.stat().st_size > 0:
         candidates.append(gs_candidate)
 
+    report_progress("Selecting smallest valid output", percent=92)
     output_bytes, note = select_smallest_non_growing(input_path, candidates, output_path)
+    if mode == "extreme" and original_bytes and output_bytes > original_bytes * 0.85:
+        note = (
+            f"Extreme mode preserved a 150 DPI quality floor and achieved "
+            f"{(1 - output_bytes / original_bytes) * 100:.1f}%. "
+            "Already-compressed, vector, or text-heavy PDFs may not shrink much without rasterizing pages."
+        )
     return CompressionResult(
         output_path=output_path,
         original_bytes=original_bytes,
@@ -102,10 +111,12 @@ def compress_to_target_range(
         candidates.append((key, candidate, result[1]))
         return result
 
+    report_progress("Testing compression boundaries", percent=28)
     evaluate(0.0)
     evaluate(1.0)
     low, high = 0.0, 1.0
-    for _ in range(max(0, max_attempts - 2)):
+    remaining = max(0, max_attempts - 2)
+    for attempt in range(remaining):
         mid = (low + high) / 2
         _, size = evaluate(mid)
         if target_min_bytes <= size <= target_max_bytes:
@@ -114,6 +125,7 @@ def compress_to_target_range(
             low = mid
         else:
             high = mid
+        report_fraction("Searching target file size", attempt + 1, remaining, 40, 88)
 
     if not candidates:
         raise CompressionError("No compression candidate could be generated.")

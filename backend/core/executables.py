@@ -83,3 +83,55 @@ def find_tesseract() -> str | None:
         Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Tesseract-OCR" / "tesseract.exe",
     ]
     return next((str(path) for path in candidates if path.exists()), None)
+
+
+def _find_windows_app(variable: str, names: tuple[str, ...], candidates: tuple[Path, ...]) -> str | None:
+    explicit = _from_environment(variable)
+    if explicit:
+        return explicit
+    discovered = _from_path(names)
+    if discovered:
+        return discovered
+    return next((str(path) for path in candidates if path.exists()), None)
+
+
+def _bundled_ffmpeg() -> str | None:
+    """Return imageio-ffmpeg's redistributable binary when it is bundled."""
+    try:
+        from imageio_ffmpeg import get_ffmpeg_exe
+
+        executable = Path(get_ffmpeg_exe())
+        return str(executable) if executable.is_file() else None
+    except Exception:
+        return None
+
+
+def find_ffmpeg() -> str | None:
+    root = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+    discovered = _find_windows_app(
+        "FFMPEG_PATH",
+        ("ffmpeg", "ffmpeg.exe"),
+        tuple(root.glob("ffmpeg*/bin/ffmpeg.exe")),
+    )
+    return discovered or _bundled_ffmpeg()
+
+
+def find_ffprobe() -> str | None:
+    explicit = _from_environment("FFPROBE_PATH")
+    if explicit:
+        return explicit
+    discovered = _from_path(("ffprobe", "ffprobe.exe"))
+    if discovered:
+        return discovered
+    ffmpeg = find_ffmpeg()
+    sibling = Path(ffmpeg).with_name("ffprobe.exe") if ffmpeg else None
+    return str(sibling) if sibling and sibling.is_file() else None
+
+
+def find_ebook_convert() -> str | None:
+    roots = (
+        Path(os.environ.get("ProgramFiles", r"C:\Program Files")),
+        Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")),
+    )
+    candidates = tuple(root / "Calibre2" / "ebook-convert.exe" for root in roots)
+    return _find_windows_app("EBOOK_CONVERT_PATH", ("ebook-convert", "ebook-convert.exe"), candidates)

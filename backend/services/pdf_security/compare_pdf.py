@@ -9,6 +9,7 @@ import zipfile
 import fitz
 
 from backend.core.errors import SecurityError
+from backend.core.progress import report_fraction, report_progress
 from backend.services.pdf_security.sha256_pdf import sha256_file
 from backend.services.shared.comparison.models import PageCompare
 from backend.services.shared.comparison.report import build_report_html
@@ -23,7 +24,9 @@ def compare_pdfs_detailed(
 ) -> tuple[dict, dict[str, bytes]]:
     """Compare PDFs at byte, page, text, word, character and rendered-image level."""
     try:
+        report_progress("Hashing first PDF", percent=20, detail=left_path.name)
         left_hash = sha256_file(left_path)
+        report_progress("Hashing second PDF", percent=28, detail=right_path.name)
         right_hash = sha256_file(right_path)
         diff_payloads: dict[str, bytes] = {}
 
@@ -59,6 +62,7 @@ def compare_pdfs_detailed(
                         pixel_difference=1.0, visually_identical=False, diff_image_name=None,
                         word_changes_preview=wprev, character_changes_preview=cprev,
                     ))
+                    report_fraction("Comparing PDF pages", idx + 1, max_pages, 32, 90)
                     continue
 
                 lp, rp = left[idx], right[idx]
@@ -94,6 +98,7 @@ def compare_pdfs_detailed(
                     word_changes_preview=wprev,
                     character_changes_preview=cprev,
                 ))
+                report_fraction("Comparing PDF pages", idx + 1, max_pages, 32, 90)
 
             serial_results = [asdict(r) for r in results]
             differing = [
@@ -135,6 +140,7 @@ def compare_pdfs_detailed(
 def compare_pdfs_to_zip(left_path: Path, right_path: Path, output_zip: Path, dpi: int = 110) -> dict:
     summary, diff_payloads = compare_pdfs_detailed(left_path, right_path, dpi=dpi, include_diff_payloads=True)
     try:
+        report_progress("Building comparison report", percent=92)
         report = build_report_html(summary, dpi)
         with zipfile.ZipFile(output_zip, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             archive.writestr("summary.json", json.dumps(summary, indent=2, ensure_ascii=False))

@@ -5,6 +5,7 @@ from pathlib import Path
 import fitz
 
 from backend.core.errors import ConversionError
+from backend.core.progress import report_fraction, report_progress
 
 def pdf_to_docx_text_fallback(input_path: Path, output_path: Path) -> None:
     """Basic text-only DOCX fallback when pdf2docx is unavailable."""
@@ -27,6 +28,8 @@ def pdf_to_docx_text_fallback(input_path: Path, output_path: Path) -> None:
                         document.add_paragraph(text)
                 if page_index < pdf.page_count - 1:
                     document.add_page_break()
+                report_fraction("Extracting text into Word", page_index + 1, pdf.page_count, 24, 90)
+        report_progress("Saving Word document", percent=94)
         document.save(output_path)
     except ConversionError:
         raise
@@ -47,8 +50,10 @@ def pdf_to_docx(input_path: Path, output_path: Path) -> None:
 
     converter = None
     try:
+        report_progress("Converting PDF layout to Word", percent=25, detail="pdf2docx engine")
         converter = Converter(str(input_path))
         converter.convert(str(output_path), start=0, end=None)
+        report_progress("Finalizing Word document", percent=94)
     except Exception as exc:
         raise ConversionError(f"PDF to Word conversion failed: {exc}") from exc
     finally:

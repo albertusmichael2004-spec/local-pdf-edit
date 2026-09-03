@@ -36,6 +36,17 @@ export function bindDropzones(root = document) {
       event.preventDefault();
       event.stopPropagation();
       zone.classList.remove("dragover");
+      const containsDirectory = [...(event.dataTransfer?.items || [])].some((item) => {
+        try {
+          return item.webkitGetAsEntry?.()?.isDirectory;
+        } catch {
+          return false;
+        }
+      });
+      if (containsDirectory) {
+        zone.dispatchEvent(new CustomEvent("directorydrop"));
+        return;
+      }
       if (event.dataTransfer?.files?.length) {
         setFiles(inputId, event.dataTransfer.files, append);
       }

@@ -9,7 +9,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.core.executables import find_ghostscript, find_libreoffice, find_tesseract
+from backend.core.executables import (
+    find_ebook_convert,
+    find_ffmpeg,
+    find_ffprobe,
+    find_ghostscript,
+    find_libreoffice,
+    find_tesseract,
+)
 
 
 def module_status(module: str) -> str:
@@ -38,6 +45,11 @@ def main() -> None:
         "reportlab",
         "bs4",
         "webview",
+        "pillow_heif",
+        "cairosvg",
+        "mutagen",
+        "psutil",
+        "ebooklib",
     ]
     for module in modules:
         print(f"{module:14} {module_status(module)}")
@@ -45,6 +57,9 @@ def main() -> None:
     print()
     print(f"Ghostscript    {find_ghostscript() or 'MISSING (Compress PDF unavailable)'}")
     print(f"Tesseract      {find_tesseract() or 'MISSING (OCR PDF unavailable)'}")
+    print(f"FFmpeg         {find_ffmpeg() or 'MISSING (video/audio processing unavailable)'}")
+    print(f"FFprobe        {find_ffprobe() or 'MISSING (video/audio detection unavailable)'}")
+    print(f"Calibre        {find_ebook_convert() or 'MISSING (ebook conversion unavailable)'}")
     print(
         "LibreOffice    "
         f"{find_libreoffice() or 'OPTIONAL MISSING (modern DOCX/PPTX/XLSX local fallbacks remain available)'}"

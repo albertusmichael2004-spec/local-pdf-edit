@@ -6,6 +6,7 @@ import fitz
 from PIL import Image
 
 from backend.core.errors import ConversionError
+from backend.core.progress import report_fraction, report_progress
 
 def jpg_to_pdf(image_paths: list[Path], output_path: Path) -> int:
     """Create a PDF with one page per image using PyMuPDF.
@@ -17,7 +18,7 @@ def jpg_to_pdf(image_paths: list[Path], output_path: Path) -> int:
         raise ConversionError("Upload at least one JPG or PNG image.")
     doc = fitz.open()
     try:
-        for path in image_paths:
+        for index, path in enumerate(image_paths, start=1):
             try:
                 with Image.open(path) as image:
                     image.verify()
@@ -31,6 +32,8 @@ def jpg_to_pdf(image_paths: list[Path], output_path: Path) -> int:
             page_h = max(72.0, height_px * 72.0 / 96.0)
             page = doc.new_page(width=page_w, height=page_h)
             page.insert_image(page.rect, filename=str(path), keep_proportion=True)
+            report_fraction("Adding images to PDF", index, len(image_paths), 24, 88)
+        report_progress("Saving image PDF", percent=94)
         doc.save(output_path, garbage=4, deflate=True)
     except ConversionError:
         raise

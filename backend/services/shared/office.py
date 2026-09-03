@@ -6,6 +6,7 @@ import subprocess
 
 from backend.core.errors import ConversionError
 from backend.core.executables import find_libreoffice
+from backend.core.progress import report_progress
 from backend.core.subprocesses import run_hidden
 
 
@@ -25,6 +26,7 @@ def office_to_pdf(input_path: Path, output_path: Path, timeout_seconds: int = 18
         str(input_path),
     ]
     try:
+        report_progress("LibreOffice is converting the document", percent=38, detail=input_path.name)
         result = run_hidden(
             command,
             capture_output=True,
@@ -50,4 +52,5 @@ def office_to_pdf(input_path: Path, output_path: Path, timeout_seconds: int = 18
         generated = candidates[0]
     if generated.resolve() != output_path.resolve():
         shutil.move(str(generated), str(output_path))
+    report_progress("Finalizing converted PDF", percent=94)
     return "LibreOffice"

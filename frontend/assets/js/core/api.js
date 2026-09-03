@@ -1,7 +1,41 @@
+import { startProgressTracking } from "./progress.js?v=4.5";
+
+function trackedResponse(response, tracker) {
+  if (!tracker) return response;
+  const bodyMethods = new Set(["arrayBuffer", "blob", "formData", "json", "text"]);
+  return new Proxy(response, {
+    get(target, property) {
+      if (bodyMethods.has(property)) {
+        return async (...args) => {
+          try {
+            return await target[property](...args);
+          } finally {
+            tracker.stop();
+          }
+        };
+      }
+      const value = Reflect.get(target, property, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
 export async function apiFetch(endpoint, options = {}) {
+  const {
+    progressElement = null,
+    progressLabel = "Processing locally…",
+    ...fetchOptions
+  } = options;
+  const trackable = fetchOptions.body instanceof FormData && (fetchOptions.method || "GET") !== "GET";
+  const tracker = trackable && progressElement
+    ? startProgressTracking(endpoint, progressElement, progressLabel)
+    : null;
   try {
-    return await fetch(endpoint, { credentials: "same-origin", ...options });
+    const headers = { ...(fetchOptions.headers || {}), ...(tracker?.headers || {}) };
+    const response = await fetch(endpoint, { credentials: "same-origin", ...fetchOptions, headers });
+    return trackedResponse(response, tracker);
   } catch (error) {
+    tracker?.stop();
     throw new Error(
       `Could not reach the local PDF engine. Keep the desktop app open and retry. (${error.message || error})`,
     );

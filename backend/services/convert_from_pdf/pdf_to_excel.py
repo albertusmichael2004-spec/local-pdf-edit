@@ -5,6 +5,7 @@ from pathlib import Path
 import fitz
 
 from backend.core.errors import ConversionError
+from backend.core.progress import report_fraction, report_progress
 
 def clean_excel_value(value: object) -> object:
     if value is None or isinstance(value, (int, float, bool)):
@@ -59,6 +60,7 @@ def pdf_to_xlsx(input_path: Path, output_path: Path) -> tuple[int, int]:
                             ws.cell(row=row_cursor, column=1, value=clean_excel_value(line))
                             row_cursor += 1
                     ws.freeze_panes = "A1"
+                    report_fraction("Extracting PDF tables", page_idx, page_count, 24, 88)
         except Exception as exc:
             plumber_error = exc
 
@@ -75,11 +77,13 @@ def pdf_to_xlsx(input_path: Path, output_path: Path) -> tuple[int, int]:
                     for row_idx, line in enumerate(text.splitlines() or [""], start=1):
                         ws.cell(row=row_idx, column=1, value=clean_excel_value(line))
                     ws.freeze_panes = "A1"
+                    report_fraction("Extracting PDF text", page_idx, page_count, 24, 88)
 
         if not workbook.sheetnames:
             ws = workbook.create_sheet(title="Page 1")
             ws["A1"] = "No extractable content found."
             page_count = 1
+        report_progress("Saving Excel workbook", percent=94)
         workbook.save(output_path)
         return len(workbook.sheetnames), table_count
     except ConversionError:

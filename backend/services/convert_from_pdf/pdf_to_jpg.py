@@ -6,6 +6,7 @@ import zipfile
 import fitz
 
 from backend.core.errors import ConversionError
+from backend.core.progress import report_fraction
 
 def pdf_to_jpg_zip(input_path: Path, output_zip: Path, dpi: int = 180, quality: int = 88) -> int:
     try:
@@ -18,6 +19,7 @@ def pdf_to_jpg_zip(input_path: Path, output_zip: Path, dpi: int = 180, quality: 
                     pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
                     data = pix.tobytes("jpeg", jpg_quality=quality)
                     archive.writestr(f"page_{idx:03d}.jpg", data)
+                    report_fraction("Rendering PDF pages to JPG", idx, doc.page_count, 24, 94)
             return doc.page_count
     except ConversionError:
         raise

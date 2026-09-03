@@ -6,6 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
@@ -35,7 +36,7 @@ async def api_remove_pages(
         input_path, filename, _ = await workspace.save_pdf(file)
         selected = parse_page_selection(pages, get_pdf_page_count(input_path))
         output = workspace.output(f"{Path(filename).stem}_pages_removed.pdf")
-        kept = remove_pages(input_path, output, {page - 1 for page in selected})
+        kept = await run_in_threadpool(remove_pages, input_path, output, {page - 1 for page in selected})
         return workspace.download(output, "application/pdf", output.name, {"X-Output-Pages": str(kept)})
     except (ValueError, PDFWorkbenchError) as exc:
         _handle_known_error(workspace, exc)
@@ -54,7 +55,7 @@ async def api_extract_pages(
         input_path, filename, _ = await workspace.save_pdf(file)
         selected = parse_page_selection(pages, get_pdf_page_count(input_path))
         output = workspace.output(f"{Path(filename).stem}_extracted.pdf")
-        count = extract_pages(input_path, output, [page - 1 for page in selected])
+        count = await run_in_threadpool(extract_pages, input_path, output, [page - 1 for page in selected])
         return workspace.download(output, "application/pdf", output.name, {"X-Output-Pages": str(count)})
     except (ValueError, PDFWorkbenchError) as exc:
         _handle_known_error(workspace, exc)
@@ -80,12 +81,12 @@ async def api_organize(
                 raise ValueError("The page editor plan is not valid JSON.") from exc
             if not isinstance(plan, list):
                 raise ValueError("The page editor plan must be a list.")
-            count = organize_with_plan(input_path, output, plan)
+            count = await run_in_threadpool(organize_with_plan, input_path, output, plan)
         else:
             if not order.strip():
                 raise ValueError("Enter a page order or arrange pages in the visual editor.")
             selected = parse_page_selection(order, get_pdf_page_count(input_path))
-            count = organize_pages(input_path, output, [page - 1 for page in selected])
+            count = await run_in_threadpool(organize_pages, input_path, output, [page - 1 for page in selected])
         return workspace.download(output, "application/pdf", output.name, {"X-Output-Pages": str(count)})
     except (ValueError, PDFWorkbenchError) as exc:
         _handle_known_error(workspace, exc)

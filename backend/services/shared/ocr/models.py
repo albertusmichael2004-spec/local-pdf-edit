@@ -34,6 +34,7 @@ class OCRPage:
     confidence: float
     psm: int
     variant: str
+    min_word_confidence: float = 20.0
 
 
 @dataclass(slots=True, frozen=True)

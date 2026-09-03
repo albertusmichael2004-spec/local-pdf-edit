@@ -6,6 +6,7 @@ import json
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
+from starlette.concurrency import run_in_threadpool
 
 import fitz
 
@@ -39,7 +40,7 @@ async def upload_watermark_font(
     try:
         filename = safe_font_filename(file.filename or "font.ttf")
         destination = custom_font_dir() / filename
-        await save_upload(file, destination, 20 * 1024 * 1024, require_pdf=False)
+        await save_upload(file, destination, require_pdf=False)
         try:
             fitz.Font(fontfile=str(destination))
         except Exception as exc:
@@ -90,7 +91,7 @@ async def api_watermark(
             raise ValueError("Watermark rules must be a list.")
         rules = [_rule_from_payload(rule, total_pages) for rule in payload]
         output = workspace.output(f"{Path(filename).stem}_watermarked.pdf")
-        add_text_watermarks(input_path, output, rules)
+        await run_in_threadpool(add_text_watermarks, input_path, output, rules)
         return workspace.download(output, "application/pdf", output.name)
     except (ValueError, PDFWorkbenchError) as exc:
         workspace.cleanup_on_error()

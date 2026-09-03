@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-def _baseline_angle(image: np.ndarray) -> float:
+def _baseline_angle(image: np.ndarray, max_angle: float) -> float:
     height, width = image.shape[:2]
     scale = min(1.0, 1200 / max(height, width))
     small = cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
@@ -34,13 +34,15 @@ def _baseline_angle(image: np.ndarray) -> float:
 
     for x1, y1, x2, y2 in segments:
         angle = float(np.degrees(np.arctan2(y2 - y1, x2 - x1)))
-        if abs(angle) <= 8:
+        if abs(angle) <= max_angle:
             angles.append(angle)
     return median(angles) if len(angles) >= 3 else 0.0
 
 
-def deskew_page(image: np.ndarray, inverse: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    angle = _baseline_angle(image)
+def deskew_page(
+    image: np.ndarray, inverse: np.ndarray, max_angle: float = 8.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    angle = _baseline_angle(image, max_angle)
     if abs(angle) < 0.2:
         return image, inverse
     height, width = image.shape[:2]

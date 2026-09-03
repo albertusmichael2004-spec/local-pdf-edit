@@ -7,6 +7,7 @@ import zipfile
 from pypdf import PdfReader, PdfWriter
 
 from backend.core.errors import PDFOperationError, PDFReadError
+from backend.core.progress import report_fraction, report_progress
 from backend.services.shared.pdf_reader import open_pdf_reader
 from backend.utils.page_ranges import PageGroup
 
@@ -19,10 +20,13 @@ def write_selected_pages(
     reader = open_pdf_reader(input_path)
     writer = PdfWriter()
     try:
-        for page_index in pages_zero_based:
+        total = len(pages_zero_based)
+        for position, page_index in enumerate(pages_zero_based, start=1):
             if page_index < 0 or page_index >= len(reader.pages):
                 raise PDFOperationError(f"Page index {page_index + 1} is outside the PDF.")
             writer.add_page(reader.pages[page_index])
+            report_fraction("Collecting selected pages", position, total, 24, 82)
+        report_progress("Writing extracted PDF", percent=90)
         with output.open("wb") as handle:
             writer.write(handle)
         return len(pages_zero_based)
@@ -62,6 +66,7 @@ def split_pdf_to_zip(
                         writer.write(handle)
                     archive.write(piece_path, arcname=piece_path.name)
                     piece_path.unlink(missing_ok=True)
+                    report_fraction("Building split archive", index, len(groups), 24, 92)
                 finally:
                     writer.close()
         return len(groups)
@@ -109,6 +114,7 @@ def groups_by_approx_size(input_path: Path, max_bytes: int) -> tuple[list[PageGr
             current = tentative
             if len(current) == 1 and tentative_size > max_bytes:
                 oversized_parts.append(len(groups) + 1)
+        report_fraction("Estimating split sizes", page_index + 1, total_pages, 22, 70)
 
     if current:
         groups.append(PageGroup(

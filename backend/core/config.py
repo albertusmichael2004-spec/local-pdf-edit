@@ -11,14 +11,10 @@ class Settings:
     app_name: str = "Local PDF Workbench"
     host: str = os.getenv("PDF_TOOL_HOST", "127.0.0.1")
     port: int = int(os.getenv("PDF_TOOL_PORT", "8000"))
-    max_file_mb: int = int(os.getenv("PDF_TOOL_MAX_FILE_MB", "250"))
     ghostscript_timeout_seconds: int = int(
         os.getenv("PDF_TOOL_GS_TIMEOUT_SECONDS", "240")
     )
-
-    @property
-    def max_file_bytes(self) -> int:
-        return self.max_file_mb * 1024 * 1024
-
+    media_timeout_seconds: int = int(os.getenv("PDF_TOOL_MEDIA_TIMEOUT_SECONDS", "3600"))
+    media_workers: int = max(1, int(os.getenv("PDF_TOOL_MEDIA_WORKERS", "2")))
 
 settings = Settings()

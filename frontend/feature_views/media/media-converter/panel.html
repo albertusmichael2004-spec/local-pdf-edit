@@ -1,0 +1,17 @@
+<section class="tool-panel" data-title="Media Converter" id="media-converter">
+  <div class="panel-intro"><h2>Media Converter</h2><p>Detect the real file type, then convert images, video, audio, PDF, or ebooks to a compatible target.</p></div>
+  <div class="dropzone" data-append="true" data-input="mediaConverterFiles">
+    <input hidden id="mediaConverterFiles" multiple type="file"/><div class="drop-icon">＋</div><strong>Drop files to convert</strong>
+    <span>No app-imposed total-size limit; disk, system resources, and installed tools still apply.</span>
+  </div>
+  <div class="sortable-list" id="mediaConverterList"></div>
+  <p class="helper">Grab a file card to lift it. Other cards slide aside as you choose the new position.</p>
+  <div class="media-detection hidden" id="mediaConverterSummary"></div>
+  <div class="two-col">
+    <label class="field"><span>Convert to</span><select disabled id="mediaConverterTarget"></select></label>
+    <label class="field"><span>Quality profile</span><select id="mediaConverterQuality"><option value="high">High quality</option><option selected value="balanced">Balanced</option><option value="smallest">Smallest file</option></select></label>
+  </div>
+  <label class="checkbox-row"><input checked id="mediaConverterMetadata" type="checkbox"/> Preserve metadata when the target supports it</label>
+  <div class="action-row"><button class="btn secondary" id="clearMediaConverter">Clear</button><button class="btn primary" disabled id="runMediaConverter">Convert</button></div>
+  <div class="status hidden" id="mediaConverterStatus"></div>
+</section>

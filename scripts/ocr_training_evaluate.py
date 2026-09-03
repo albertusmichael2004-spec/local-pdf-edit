@@ -572,7 +572,7 @@ def main() -> int:
         type=Path,
         default=Path(
             "training/ocr/"
-            "private/images"
+            "datasets/train/images"
         ),
     )
 
@@ -581,7 +581,7 @@ def main() -> int:
         type=Path,
         default=Path(
             "training/ocr/"
-            "private/ground_truth"
+            "datasets/train/ground_truth"
         ),
     )
 

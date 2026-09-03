@@ -6,8 +6,11 @@ from typing import BinaryIO
 
 from fastapi import UploadFile
 
+from backend.core.progress import report_fraction, report_progress
+
 
 _PDF_HEADER = b"%PDF-"
+UPLOAD_CHUNK_BYTES = 8 * 1024 * 1024
 
 
 def safe_filename(name: str | None, fallback: str = "file.pdf") -> str:
@@ -20,31 +23,36 @@ def safe_filename(name: str | None, fallback: str = "file.pdf") -> str:
 async def save_upload(
     upload: UploadFile,
     destination: Path,
-    max_bytes: int,
     require_pdf: bool = True,
 ) -> int:
-    """Stream an uploaded file to disk while enforcing a size limit.
+    """Stream an uploaded file to disk without an application size cap.
 
     Returns the number of bytes written.
     """
     destination.parent.mkdir(parents=True, exist_ok=True)
     written = 0
     first_chunk = True
+    total = int(getattr(upload, "size", 0) or 0)
+    label = safe_filename(upload.filename, destination.name)
+    report_progress("Staging upload on local disk", percent=3, detail=label)
 
     with destination.open("wb") as output:
         while True:
-            chunk = await upload.read(1024 * 1024)
+            chunk = await upload.read(UPLOAD_CHUNK_BYTES)
             if not chunk:
                 break
             if first_chunk and require_pdf and not chunk.startswith(_PDF_HEADER):
                 raise ValueError("The uploaded file does not look like a valid PDF.")
             first_chunk = False
             written += len(chunk)
-            if written > max_bytes:
-                raise ValueError(
-                    f"File is larger than the configured {max_bytes / 1024 / 1024:.0f} MB limit."
-                )
             output.write(chunk)
+            if total:
+                report_fraction("Staging upload on local disk", written, total, 3, 18)
+            else:
+                report_progress(
+                    "Staging upload on local disk",
+                    detail=f"{written / (1024 * 1024):,.1f} MB copied",
+                )
 
     await upload.close()
     if written == 0:

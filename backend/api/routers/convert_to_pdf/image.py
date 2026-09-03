@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
@@ -45,7 +46,8 @@ async def api_jpg_to_pdf(
             "images.pdf"
         )
 
-        count = jpg_to_pdf(
+        count = await run_in_threadpool(
+            jpg_to_pdf,
             paths,
             output,
         )

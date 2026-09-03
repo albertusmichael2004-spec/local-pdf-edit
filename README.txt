@@ -5,13 +5,15 @@ LOCAL PDF WORKBENCH v4.1
 -------------------
 Local PDF Workbench is a local-first desktop PDF utility. It is designed to provide common PDF editing, conversion, compression, OCR, security, comparison, and file-management features without sending the user's documents to a cloud conversion service.
 
-The application can run in two modes:
+The application can run in two desktop modes:
 
 A. Live-source desktop mode
    - Uses the project source files directly.
-   - Runs through Python/PyWebView.
+   - Opens a dedicated Chrome/Edge Chromium app window.
    - Best for development and personal use.
    - Source-code changes are picked up the next time the application starts.
+   - Uses a normal user token; it does not request administrator elevation.
+   - PyWebView remains only as a compatibility fallback when no full browser is available.
 
 B. Portable Windows application mode
    - Built with PyInstaller using distribution/windows/build_portable.ps1.
@@ -59,7 +61,7 @@ source code.
 3. HIGH-LEVEL ARCHITECTURE
 --------------------------
 
-Desktop shell (PyWebView)
+Desktop shell (Chromium app window)
         |
         v
 Frontend HTML/CSS/JavaScript
@@ -179,7 +181,11 @@ pdf_workbench/
 |-- docs/
 |-- scripts/
 |-- tests/
+|-- .venv/                (local development environment; ignored by Git)
+|-- apps/                 (development-only; ignored by Git)
+|-- training/             (development-only; ignored by Git)
 |
+|-- Start Local PDF Workbench.cmd
 |-- desktop.py
 |-- run.py
 |-- requirements.txt
@@ -467,6 +473,7 @@ distribution/windows/ contains Windows portable-build files.
 Important files:
 - LocalPDFWorkbench.spec: PyInstaller configuration.
 - build_portable.ps1: builds the Windows onedir application.
+- build_or_update.py: rebuilds the portable app and refreshes release/LocalPDFWorkbench/.
 - Build Portable App.bat: convenient launcher for the build script.
 - requirements-build.txt: build-only Python dependency list.
 - README_PORTABLE.md: portable-build notes.
@@ -485,7 +492,12 @@ scripts/ contains helper utilities for setup and development.
 
 - setup_windows.ps1: creates/checks the local virtual environment and optionally installs requirements.
 - check_system.py: checks local external engines.
-- create_desktop_shortcut.ps1: creates a live-source desktop shortcut.
+- create_desktop_shortcut.ps1: creates a shortcut to the hybrid source/portable launcher.
+
+The checkout keeps one local .venv for development. The .venv, apps/,
+training/, build/, dist/, release/, tmp/, and *.egg-info/ folders are excluded
+from release commits through .gitignore. The portable build does not require
+the development .venv on the destination computer.
 
 
 12. TESTS FOLDER
@@ -558,8 +570,12 @@ ReportLab
 BeautifulSoup4
 - HTML parsing and fallback handling.
 
+Chromium app shell
+- Opens the local HTML frontend in an isolated Chrome or Microsoft Edge app window.
+- Avoids WebView2 data-directory and mixed-integrity startup failures.
+
 PyWebView
-- Desktop window shell that displays the local HTML frontend without requiring the user to manually open a browser.
+- Optional compatibility fallback for systems without a full Chrome/Edge installation.
 
 
 14. EXTERNAL WINDOWS ENGINES
@@ -576,6 +592,16 @@ LibreOffice
 - Used for higher-fidelity Office-to-PDF conversion.
 - Required for legacy .doc, .ppt, and .xls files.
 
+FFprobe
+- Used for media inspection and content-based video/audio detection when installed.
+
+Calibre
+- Used for ebook conversion when installed.
+
+The UI and capability endpoint report which optional engines are available on
+the current Windows computer. Run check_system.py before relying on a feature
+that requires one of these external programs.
+
 Check them with:
 
     .\.venv\Scripts\python.exe .\scripts\check_system.py
@@ -585,7 +611,17 @@ Check them with:
 ---------------------------------------
 From the project folder:
 
-    & ".\.venv\Scripts\pythonw.exe" ".\desktop.py"
+    .\Start Local PDF Workbench.cmd
+
+The launcher first validates the source .venv and opens a dedicated Chromium
+app window with normal user permissions. If the source runtime is unavailable,
+it automatically falls back to release/LocalPDFWorkbench/LocalPDFWorkbench.exe.
+This avoids WebView2 data-directory failures and .NET message-pump hangs that
+could make pythonw.exe unresponsive. The local API and native file operations
+remain on 127.0.0.1; documents are not uploaded to the internet.
+
+File and folder pickers use native Windows PowerShell/.NET dialogs, so they do
+not depend on Tcl/Tk being present in the Python or PyInstaller runtime.
 
 This mode does not need VS Code to remain open.
 
@@ -638,7 +674,7 @@ Normal PDF uploads are processed inside temporary local folders created for each
 
 Typical flow:
 
-Browser/PyWebView UI
+Chromium app UI
     -> localhost FastAPI
     -> local temporary workspace
     -> local PDF engine
@@ -677,12 +713,17 @@ Source project:
 - Used for development.
 - Uses .venv.
 - Can be edited directly.
-- Desktop shortcut points to desktop.py.
+- Start Local PDF Workbench.cmd validates the source runtime first and falls back to the portable EXE.
+- The Desktop shortcut targets the system cmd.exe and invokes that launcher safely.
 
 release/LocalPDFWorkbench/:
 - Generated portable application.
 - Used for sharing with another Windows user/computer.
 - Does not update automatically when source code changes.
 - Must be rebuilt after source changes if the portable release must contain those changes.
+
+Development-only content:
+- apps/ contains the Android project and is intentionally ignored by Git.
+- training/ contains OCR training code/data and is intentionally ignored by Git.
 
 END OF README

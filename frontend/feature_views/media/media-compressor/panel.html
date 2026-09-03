@@ -1,0 +1,19 @@
+<section class="tool-panel" data-title="Media Compressor" id="media-compressor">
+  <div class="panel-intro"><h2>Media Compressor</h2><p>Compress image, video, or audio batches with a quality preset, keeping the source format or transcoding when supported.</p></div>
+  <div class="dropzone" data-append="true" data-input="mediaCompressorFiles">
+    <input accept="image/*,video/*,audio/*" hidden id="mediaCompressorFiles" multiple type="file"/><div class="drop-icon">＋</div><strong>Drop media to compress</strong>
+    <span>Files stream to a temporary job workspace and are removed after the download.</span>
+  </div>
+  <div class="sortable-list" id="mediaCompressorList"></div>
+  <p class="helper">Grab a file card to lift it. The list animates into the new arrangement before processing.</p>
+  <div class="media-detection hidden" id="mediaCompressorSummary"></div>
+  <label class="field"><span>Output type</span><select disabled id="mediaCompressorTarget"></select></label>
+  <div class="profile-grid" id="mediaCompressionProfiles">
+    <label class="profile danger"><input name="mediaCompressionMode" type="radio" value="extreme"/><span class="profile-title">Extreme compression</span><span>Targets roughly 70–90% size reduction with visible quality loss.</span><small>Strong resize, low bitrate, or high video CRF</small></label>
+    <label class="profile selected"><input checked name="mediaCompressionMode" type="radio" value="recommended"/><span class="profile-title">Recommended</span><span>Meaningful compression with balanced playback and image quality.</span><small>Best default for most files</small></label>
+    <label class="profile"><input name="mediaCompressionMode" type="radio" value="less"/><span class="profile-title">Less compression</span><span>Keeps more detail while reducing file size where possible.</span><small>Higher quality output</small></label>
+  </div>
+  <label class="checkbox-row"><input checked id="mediaCompressorMetadata" type="checkbox"/> Preserve metadata when possible</label>
+  <div class="action-row"><button class="btn secondary" id="clearMediaCompressor">Clear</button><button class="btn primary" disabled id="runMediaCompressor">Compress</button></div>
+  <div class="status hidden" id="mediaCompressorStatus"></div>
+</section>

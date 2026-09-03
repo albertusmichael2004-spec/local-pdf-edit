@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.api.router import api_router
+from backend.api.progress_middleware import progress_middleware
 from backend.core.config import settings
 from backend.core.paths import frontend_root
 
@@ -18,6 +19,7 @@ app = FastAPI(
     redoc_url=None,
 )
 app.include_router(api_router)
+app.middleware("http")(progress_middleware)
 app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 
 

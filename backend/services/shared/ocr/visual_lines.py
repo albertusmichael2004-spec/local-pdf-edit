@@ -9,6 +9,7 @@ from .models import OCRWord
 def usable_word(
     word: OCRWord,
     page_width: int,
+    min_confidence: float = 20.0,
 ) -> bool:
     token = re.sub(
         r"[^\w]",
@@ -38,11 +39,11 @@ def usable_word(
     ):
         return True
 
-    if word.confidence >= 35:
+    if word.confidence >= min(100, min_confidence + 15):
         return True
 
     return (
-        word.confidence >= 20
+        word.confidence >= min_confidence
         and len(token) >= 4
     )
 

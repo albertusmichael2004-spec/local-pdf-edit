@@ -4,14 +4,22 @@
   <div class="file-meta hidden" data-filemeta-for="rotateFile"></div>
 
   <div class="rotate-controls hidden" id="rotateControls">
-    <div class="two-col compact-fields">
+    <div class="rotate-action-row">
       <label class="field"><span>Pages</span><select id="rotatePageMode"><option value="all">All pages</option><option value="custom">Custom pages</option></select></label>
-      <div class="field"><span>Direction</span><div class="segmented-buttons" id="rotateDirection"><button class="segment active" type="button" data-angle="270">↶ Rotate left</button><button class="segment" type="button" data-angle="90">↷ Rotate right</button></div></div>
+      <div class="rotate-click-action" id="rotateAllAction">
+        <button class="btn secondary rotate-clockwise" id="rotateClockwise" type="button">↻ Rotate 90° clockwise</button>
+        <span id="rotateAngleLabel">Current rotation: 0°</span>
+      </div>
     </div>
   </div>
 
+  <div class="rotate-preview-card hidden" id="rotateAllPreview">
+    <div class="page-workspace-header"><div><strong>All-pages preview</strong><span>Click the rotate button repeatedly for 180° or 270°.</span></div></div>
+    <div class="rotate-preview-stage"><img id="rotatePreviewImage" alt="Rotation preview"/></div>
+  </div>
+
   <div class="page-workspace-wrap hidden" id="rotateWorkspaceWrap">
-    <div class="page-workspace-header"><div><strong>Select pages to rotate</strong><span>Click page thumbnails. Selected pages are outlined.</span></div><span id="rotateSelectionCount">0 selected</span></div>
+    <div class="page-workspace-header"><div><strong>Click pages to rotate</strong><span>Each click rotates that page 90° clockwise. Click two or three times for 180° or 270°.</span></div><span id="rotateSelectionCount">0 pages rotated</span></div>
     <div class="page-workspace scrollable-page-box selection-page-box" id="rotatePageWorkspace"></div>
   </div>
 

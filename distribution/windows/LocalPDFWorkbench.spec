@@ -4,48 +4,25 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 ROOT = Path(SPEC).resolve().parents[2]
 FRONTEND = ROOT / "frontend"
 ICON = FRONTEND / "assets" / "images" / "app.ico"
 
-hiddenimports: list[str] = []
+hiddenimports = collect_submodules("uvicorn") + collect_submodules("backend")
 datas = [(str(FRONTEND), "frontend")]
+if importlib.util.find_spec("imageio_ffmpeg") is not None:
+    datas += collect_data_files("imageio_ffmpeg", includes=["binaries/*"])
 INDONESIAN_OCR = ROOT / "data" / "ind.traineddata"
 if INDONESIAN_OCR.exists():
     datas.append((str(INDONESIAN_OCR), "data"))
 binaries = []
 
-# Explicit collection keeps the portable Windows build robust for packages that
-# load plugins/data/native DLLs dynamically. This is intentionally build-only;
-# source mode does not depend on PyInstaller.
-for package in [
-    "uvicorn",
-    "fastapi",
-    "starlette",
-    "multipart",
-    "cryptography",
-    "pdf2docx",
-    "fitz",
-    "pypdf",
-    "webview",
-    "pptx",
-    "docx",
-    "openpyxl",
-    "pdfplumber",
-    "pytesseract",
-    "weasyprint",
-    "reportlab",
-    "bs4",
-    "PIL",
-]:
-    try:
-        hiddenimports += collect_submodules(package)
-        datas += collect_data_files(package)
-        binaries += collect_dynamic_libs(package)
-    except Exception:
-        pass
+# PyInstaller's package hooks collect the native libraries and data used by the
+# imports it discovers. Avoid collecting every package submodule here: doing so
+# bundled test suites, demos, and unused optional stacks such as Pandas/PyArrow,
+# which inflated both the portable folder and Windows cold-start scanning.
 
 if importlib.util.find_spec("clr") is not None:
     hiddenimports.append("clr")
@@ -59,7 +36,7 @@ analysis = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["pytest"],
+    excludes=["pytest", "pandas", "pyarrow"],
     noarchive=False,
 )
 
@@ -76,6 +53,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    uac_admin=False,
     disable_windowed_traceback=False,
     icon=str(ICON),
 )

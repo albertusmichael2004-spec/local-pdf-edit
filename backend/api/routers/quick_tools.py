@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
@@ -37,7 +38,7 @@ async def merge(files: Annotated[list[UploadFile], File(...)]) -> FileResponse:
             )
             input_paths.append(input_path)
         output = workspace.output("merged.pdf")
-        total_pages = merge_pdfs(input_paths, output)
+        total_pages = await run_in_threadpool(merge_pdfs, input_paths, output)
         return workspace.download(
             output,
             "application/pdf",
@@ -71,7 +72,7 @@ async def split(
             groups = parse_group_expression(ranges, total_pages)
             if merge_ranges:
                 output = workspace.output(f"{Path(filename).stem}_extracted_ranges.pdf")
-                count = write_groups_as_one_pdf(input_path, groups, output)
+                count = await run_in_threadpool(write_groups_as_one_pdf, input_path, groups, output)
                 return workspace.download(
                     output,
                     "application/pdf",
@@ -83,7 +84,8 @@ async def split(
         elif mode == "size":
             if max_size_mb <= 0:
                 raise ValueError("Maximum part size must be greater than zero.")
-            groups, oversized = groups_by_approx_size(
+            groups, oversized = await run_in_threadpool(
+                groups_by_approx_size,
                 input_path, int(max_size_mb * 1024 * 1024)
             )
         else:
@@ -91,7 +93,7 @@ async def split(
 
         output_zip = workspace.output("split-pdf.zip")
         base_name = Path(filename).stem
-        count = split_pdf_to_zip(input_path, groups, output_zip, base_name)
+        count = await run_in_threadpool(split_pdf_to_zip, input_path, groups, output_zip, base_name)
         headers = {
             "X-Split-Files": str(count),
             "X-Original-Pages": str(total_pages),

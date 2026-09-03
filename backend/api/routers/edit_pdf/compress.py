@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request, dependency_unavailable
 from backend.api.workspace import RequestWorkspace
@@ -34,7 +35,8 @@ async def compress(
                 raise ValueError("Custom compression requires minimum and maximum target sizes.")
             if target_min_mb <= 0 or target_max_mb <= 0 or target_min_mb > target_max_mb:
                 raise ValueError("Enter a valid custom size range where min <= max and both are > 0.")
-            result = compress_to_target_range(
+            result = await run_in_threadpool(
+                compress_to_target_range,
                 input_path,
                 output,
                 int(target_min_mb * 1024 * 1024),
@@ -42,7 +44,7 @@ async def compress(
                 settings.ghostscript_timeout_seconds,
             )
         else:
-            result = compress_preset(input_path, output, mode, settings.ghostscript_timeout_seconds)
+            result = await run_in_threadpool(compress_preset, input_path, output, mode, settings.ghostscript_timeout_seconds)
 
         headers = {
             "X-Compression-Mode": result.mode,

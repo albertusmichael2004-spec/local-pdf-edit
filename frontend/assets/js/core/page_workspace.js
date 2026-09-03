@@ -1,4 +1,5 @@
 import { inspectPdf, previewPdf } from "./previews.js";
+import { bindAnimatedReorder } from "./drag_reorder.js";
 
 let sequence = 0;
 
@@ -47,6 +48,7 @@ export class PageWorkspace {
     maxPreviewBatch = 12,
     onChange = null,
     onSelectionChange = null,
+    onCardClick = null,
   }) {
     this.inputId = inputId;
     this.container = typeof container === "string" ? document.querySelector(container) : container;
@@ -57,6 +59,7 @@ export class PageWorkspace {
     this.maxPreviewBatch = maxPreviewBatch;
     this.onChange = onChange;
     this.onSelectionChange = onSelectionChange;
+    this.onCardClick = onCardClick;
     this.file = null;
     this.info = null;
     this.items = [];
@@ -64,7 +67,18 @@ export class PageWorkspace {
     this.pendingPages = new Set();
     this.previewTimer = null;
     this.observer = null;
-    this.dragId = null;
+    if (this.reorderable) {
+      bindAnimatedReorder({
+        container: this.container,
+        itemSelector: ".page-editor-card",
+        onCommit: (order) => {
+          const byId = new Map(this.items.map((item) => [item.id, item]));
+          this.items = order.map((id) => byId.get(id)).filter(Boolean);
+          this._notifyChanged();
+          this.render();
+        },
+      });
+    }
   }
 
   async load(file) {
@@ -105,8 +119,9 @@ export class PageWorkspace {
 
   _createCard(item, index) {
     const card = document.createElement("div");
-    card.className = `page-editor-card${item.selected ? " selected" : ""}${item.blank ? " blank" : ""}`;
+    card.className = `page-editor-card${item.selected ? " selected" : ""}${item.blank ? " blank" : ""}${item.edited ? " edited" : ""}${item.active ? " active-page" : ""}`;
     card.dataset.itemId = item.id;
+    card.dataset.reorderKey = item.id;
     if (item.sourcePage) card.dataset.sourcePage = String(item.sourcePage);
 
     if (this.organizeActions) {
@@ -124,8 +139,7 @@ export class PageWorkspace {
 
     const pageShell = document.createElement("div");
     pageShell.className = "page-editor-page";
-    pageShell.draggable = this.reorderable;
-    if (this.reorderable) this._bindDrag(pageShell, item.id);
+    pageShell.draggable = false;
 
     if (this.checkboxSelection) {
       const check = document.createElement("input");
@@ -145,9 +159,13 @@ export class PageWorkspace {
     } else {
       const img = document.createElement("img");
       img.alt = `Preview page ${item.sourcePage}`;
+      img.draggable = false;
       img.dataset.lazyPage = String(item.sourcePage);
       const cached = this.previewCache.get(item.sourcePage);
-      if (cached?.image) {
+      if (item.previewImage) {
+        img.src = item.previewImage;
+        img.dataset.customPreview = "true";
+      } else if (cached?.image) {
         img.src = cached.image;
         this._applyPreviewMetadata(item, cached);
       }
@@ -183,7 +201,9 @@ export class PageWorkspace {
       pageShell.appendChild(actions);
     }
 
-    if (this.selectable) {
+    if (this.onCardClick) {
+      pageShell.addEventListener("click", (event) => this.onCardClick(item, this, event));
+    } else if (this.selectable) {
       pageShell.addEventListener("click", () => this.setSelected(item.id, !item.selected));
     }
 
@@ -206,36 +226,6 @@ export class PageWorkspace {
       card.appendChild(right);
     }
     return card;
-  }
-
-  _bindDrag(pageShell, itemId) {
-    pageShell.addEventListener("dragstart", (event) => {
-      this.dragId = itemId;
-      pageShell.closest(".page-editor-card")?.classList.add("dragging");
-      event.dataTransfer.effectAllowed = "move";
-    });
-    pageShell.addEventListener("dragend", () => {
-      this.dragId = null;
-      this.container.querySelectorAll(".page-editor-card").forEach((card) => card.classList.remove("dragging", "drop-target"));
-    });
-    pageShell.addEventListener("dragover", (event) => {
-      if (!this.dragId || this.dragId === itemId) return;
-      event.preventDefault();
-      pageShell.closest(".page-editor-card")?.classList.add("drop-target");
-    });
-    pageShell.addEventListener("dragleave", () => pageShell.closest(".page-editor-card")?.classList.remove("drop-target"));
-    pageShell.addEventListener("drop", (event) => {
-      event.preventDefault();
-      const targetId = itemId;
-      if (!this.dragId || this.dragId === targetId) return;
-      const from = this.items.findIndex((item) => item.id === this.dragId);
-      const to = this.items.findIndex((item) => item.id === targetId);
-      if (from < 0 || to < 0) return;
-      const [moved] = this.items.splice(from, 1);
-      this.items.splice(to, 0, moved);
-      this._notifyChanged();
-      this.render();
-    });
   }
 
   insertBlank(index, side = "after") {
@@ -367,7 +357,7 @@ export class PageWorkspace {
         this.previewCache.set(preview.page, preview);
         this.items.filter((item) => item.sourcePage === preview.page).forEach((item) => this._applyPreviewMetadata(item, preview));
         this.container.querySelectorAll(`img[data-lazy-page="${preview.page}"]`).forEach((img) => {
-          img.src = preview.image;
+          if (!img.dataset.customPreview) img.src = preview.image;
         });
       }
     } catch (error) {

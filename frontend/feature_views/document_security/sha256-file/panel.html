@@ -1,0 +1,20 @@
+<section class="tool-panel" data-title="SHA-256 File" id="document-sha256">
+  <div class="panel-intro">
+    <h2>SHA-256 File</h2>
+    <p>Generate a cryptographic fingerprint for any document, image, audio, video, archive, or other file.</p>
+  </div>
+  <div class="dropzone" data-input="documentShaFile">
+    <input hidden id="documentShaFile" type="file"/>
+    <div class="drop-icon">＋</div>
+    <strong>Drop any file</strong>
+    <span>For a complete folder, use the Windows folder picker below.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="documentShaFile"></div>
+  <div class="action-row native-source-row">
+    <button class="btn secondary" id="chooseDocumentShaNative" type="button">Choose local file</button>
+    <button class="btn secondary" id="chooseDocumentShaFolder" type="button">Choose local folder</button>
+  </div>
+  <div class="file-meta hidden" id="documentShaNativeMeta"></div>
+  <button class="btn primary" id="documentShaBtn">Generate SHA-256</button>
+  <div class="status hidden hash-output" id="documentShaStatus"></div>
+</section>

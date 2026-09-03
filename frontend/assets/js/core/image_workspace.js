@@ -1,5 +1,6 @@
 import { getFiles, onFilesChanged, replaceFiles } from "./file_store.js";
 import { localImageUrl } from "./previews.js";
+import { bindAnimatedReorder } from "./drag_reorder.js";
 
 function createButton(label, title, className = "page-card-action") {
   const button = document.createElement("button");
@@ -16,7 +17,14 @@ export class ImageWorkspace {
     this.container = container;
     this.wrapper = wrapper;
     this.count = count;
-    this.dragIndex = null;
+    bindAnimatedReorder({
+      container: this.container,
+      itemSelector: ".page-editor-card",
+      onCommit: (order) => {
+        const files = getFiles(this.inputId);
+        replaceFiles(this.inputId, order.map((value) => files[Number(value)]).filter(Boolean));
+      },
+    });
     onFilesChanged(inputId, () => this.render());
     this.render();
   }
@@ -32,14 +40,16 @@ export class ImageWorkspace {
   _card(file, index) {
     const card = document.createElement("div");
     card.className = "page-editor-card";
+    card.dataset.reorderKey = String(index);
     const page = document.createElement("div");
     page.className = "page-editor-page";
-    page.draggable = true;
+    page.draggable = false;
     const preview = document.createElement("div");
     preview.className = "page-editor-preview";
     const image = document.createElement("img");
     image.src = localImageUrl(file);
     image.alt = `Preview ${file.name}`;
+    image.draggable = false;
     preview.appendChild(image);
     const actions = document.createElement("div");
     actions.className = "page-card-actions";
@@ -56,34 +66,7 @@ export class ImageWorkspace {
     label.textContent = `Page ${index + 1} · ${file.name}`;
     label.title = file.name;
     page.append(preview, actions, label);
-    this._bindDrag(page, index);
     card.appendChild(page);
     return card;
-  }
-
-  _bindDrag(page, index) {
-    page.addEventListener("dragstart", (event) => {
-      this.dragIndex = index;
-      page.closest(".page-editor-card")?.classList.add("dragging");
-      event.dataTransfer.effectAllowed = "move";
-    });
-    page.addEventListener("dragend", () => {
-      this.dragIndex = null;
-      this.container.querySelectorAll(".page-editor-card").forEach((card) => card.classList.remove("dragging", "drop-target"));
-    });
-    page.addEventListener("dragover", (event) => {
-      if (this.dragIndex === null || this.dragIndex === index) return;
-      event.preventDefault();
-      page.closest(".page-editor-card")?.classList.add("drop-target");
-    });
-    page.addEventListener("dragleave", () => page.closest(".page-editor-card")?.classList.remove("drop-target"));
-    page.addEventListener("drop", (event) => {
-      event.preventDefault();
-      if (this.dragIndex === null || this.dragIndex === index) return;
-      const files = [...getFiles(this.inputId)];
-      const [moved] = files.splice(this.dragIndex, 1);
-      files.splice(index, 0, moved);
-      replaceFiles(this.inputId, files);
-    });
   }
 }

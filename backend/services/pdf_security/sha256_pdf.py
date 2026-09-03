@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 
+from backend.services.shared.file_hash import sha256_file as _sha256_file
+
+
 def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    """Compatibility wrapper for the PDF-security service API."""
+    return _sha256_file(path)

@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
@@ -39,7 +40,8 @@ async def api_image_ocr_export(
             image_paths.append(path)
         extension = "pdf" if normalized_format == "pdf" else "docx"
         output = workspace.output(f"image_ocr_text.{extension}")
-        image_count = jpg_to_text_to_pdf_or_word(
+        image_count = await run_in_threadpool(
+            jpg_to_text_to_pdf_or_word,
             image_paths=image_paths,
             output_path=output,
             output_format=normalized_format,

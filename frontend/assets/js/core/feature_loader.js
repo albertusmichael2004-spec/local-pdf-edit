@@ -1,13 +1,22 @@
-﻿import { apiFetch } from "./api.js";
-import { $, $$ } from "./dom.js";
+import { apiFetch } from "./api.js";
+import { $, $$ } from "./dom.js?v=4.5";
 import {
   bindDropzones,
   initializeSingleFileControls,
-} from "./dropzones.js";
-import { FEATURES } from "./features.js";
+} from "./dropzones.js?v=4.5";
+import { FEATURES } from "./features.js?v=6.0";
 
+const featureResources = new Map();
+const assetVersion = new URLSearchParams(window.location.search).get("asset_version") || "6.0";
+let navigationGeneration = 0;
 
-async function loadFeature(featureId) {
+function versionedUrl(path) {
+  const url = new URL(path, window.location.origin);
+  url.searchParams.set("v", assetVersion);
+  return url;
+}
+
+async function prepareFeature(featureId) {
   const feature = FEATURES[featureId];
 
   if (!feature) {
@@ -16,9 +25,11 @@ async function loadFeature(featureId) {
     );
   }
 
-  const response = await apiFetch(
-    feature.view
-  );
+  if (featureResources.has(featureId)) {
+    return featureResources.get(featureId);
+  }
+
+  const response = await apiFetch(versionedUrl(feature.view), { cache: "force-cache" });
 
   if (!response.ok) {
     throw new Error(
@@ -27,6 +38,24 @@ async function loadFeature(featureId) {
   }
 
   const html = await response.text();
+
+  const controllerUrl = versionedUrl(feature.controller);
+
+  const controller = await import(
+    controllerUrl.href
+  );
+
+  const resources = { html, controller };
+  featureResources.set(featureId, resources);
+  return resources;
+}
+
+
+async function loadFeature(featureId, generation) {
+  const feature = FEATURES[featureId];
+  const { html, controller } = await prepareFeature(featureId);
+
+  if (generation !== navigationGeneration) return null;
 
   const host = $("#featureHost");
 
@@ -87,10 +116,6 @@ async function loadFeature(featureId) {
     panel
   );
 
-  const controller = await import(
-    feature.controller
-  );
-
   if (
     typeof controller.init === "function"
   ) {
@@ -102,13 +127,45 @@ async function loadFeature(featureId) {
   return panel;
 }
 
+function renderFeatureFailure(featureId, error) {
+  const host = $("#featureHost");
+  if (!host) return;
+  const panel = document.createElement("section");
+  panel.className = "tool-panel active feature-load-failure";
+  const heading = document.createElement("h2");
+  heading.textContent = `${FEATURES[featureId]?.title || featureId} could not open`;
+  const detail = document.createElement("p");
+  detail.textContent = error?.message || String(error);
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "btn primary";
+  retry.textContent = "Retry feature";
+  retry.addEventListener("click", () => showFeature(featureId));
+  panel.append(heading, detail, retry);
+  host.replaceChildren(panel);
+}
+
 
 export async function showFeature(
   featureId
 ) {
-  const panel = await loadFeature(
-    featureId
-  );
+  const generation = ++navigationGeneration;
+  const selectedButton = $(`.nav-tool[data-tool="${featureId}"]`);
+  selectedButton?.classList.add("loading");
+  let panel;
+  try {
+    panel = await loadFeature(featureId, generation);
+  } catch (error) {
+    if (generation !== navigationGeneration) return null;
+    renderFeatureFailure(featureId, error);
+    const title = $("#toolTitle");
+    if (title) title.textContent = "Feature failed to load";
+    throw error;
+  } finally {
+    selectedButton?.classList.remove("loading");
+  }
+
+  if (!panel || generation !== navigationGeneration) return null;
 
   /*
    * Defensive:
@@ -139,6 +196,8 @@ export async function showFeature(
       );
     }
   );
+
+  return panel;
 }
 
 

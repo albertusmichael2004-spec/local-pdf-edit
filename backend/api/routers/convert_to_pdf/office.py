@@ -5,6 +5,7 @@ from typing import Annotated, Callable
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import (
     bad_request,
@@ -51,7 +52,8 @@ async def _office_conversion(
             f"{Path(filename).stem}.pdf"
         )
 
-        engine = converter(
+        engine = await run_in_threadpool(
+            converter,
             input_path,
             output,
         )

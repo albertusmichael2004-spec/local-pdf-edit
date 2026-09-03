@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request, dependency_unavailable
 from backend.api.workspace import RequestWorkspace
@@ -25,7 +26,7 @@ async def api_ocr(
     try:
         input_path, filename, _ = await workspace.save_pdf(file)
         output = workspace.output(f"{Path(filename).stem}_ocr.pdf")
-        count = ocr_pdf(input_path, output, language, min(300, max(120, dpi)))
+        count = await run_in_threadpool(ocr_pdf, input_path, output, language, min(300, max(120, dpi)))
         return workspace.download(output, "application/pdf", output.name, {"X-OCR-Pages": str(count)})
     except OCRError as exc:
         workspace.cleanup_on_error()

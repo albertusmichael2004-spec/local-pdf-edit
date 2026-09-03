@@ -1,0 +1,23 @@
+<section class="tool-panel" data-title="Extract Archive" id="extract-archive">
+  <div class="panel-intro">
+    <h2>Extract Archive</h2>
+    <p>Extract ZIP, 7z, RAR, TAR, TAR.GZ, TGZ, BZ2, XZ, CAB, and other formats supported by Windows.</p>
+  </div>
+  <div class="dropzone" data-input="extractArchiveFile" id="extractArchiveDropzone">
+    <input accept=".zip,.7z,.rar,.tar,.tgz,.gz,.bz2,.xz,.cab,.tbz2,.txz,application/zip,application/x-7z-compressed" hidden id="extractArchiveFile" type="file"/>
+    <div class="drop-icon">＋</div>
+    <strong>Click to upload or drop a compressed file</strong>
+    <span>ZIP, 7z, RAR, TAR families, GZ, BZ2, XZ, CAB, and other supported archives.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="extractArchiveFile"></div>
+  <div class="action-row native-source-row">
+    <button class="btn secondary" id="chooseArchiveFile" type="button">Choose compressed file with Windows</button>
+    <span class="helper">Keeps the original path available for “extract beside archive”.</span>
+  </div>
+  <div class="file-meta hidden" id="extractArchiveNativeMeta"></div>
+  <label class="field"><span>Archive password (optional)</span><input autocomplete="current-password" id="extractArchivePassword" type="password"/></label>
+  <label class="checkbox-row"><input checked id="extractBesideArchive" type="checkbox"/> Extract to a new folder beside the compressed file</label>
+  <p class="helper security-note">Native selection: checked extracts beside the archive; unchecked opens a Windows folder picker. Dragged/uploaded files are extracted to Downloads and the resulting folder opens automatically.</p>
+  <button class="btn primary" id="extractArchiveBtn">Extract files</button>
+  <div class="status hidden" id="extractArchiveStatus"></div>
+</section>

@@ -15,22 +15,21 @@ def profile_from_strength(strength: float) -> CompressionProfile:
     dpi = round(300 - (240 * strength))
     jpeg_quality = round(92 - (57 * strength))
     mono_dpi = max(150, round(dpi * 2))
-    return CompressionProfile(dpi=dpi, jpeg_quality=jpeg_quality, mono_dpi=mono_dpi)
+    return CompressionProfile(
+        dpi=dpi,
+        jpeg_quality=jpeg_quality,
+        mono_dpi=mono_dpi,
+        jpeg_qfactor=round(0.35 + (0.60 * strength), 3),
+        force_jpeg_reencode=strength >= 0.12,
+    )
 
 
-def run_ghostscript(
+def build_ghostscript_command(
+    executable: str,
     input_path: Path,
     output_path: Path,
     profile: CompressionProfile,
-    timeout_seconds: int,
-) -> None:
-    executable = find_ghostscript()
-    if not executable:
-        raise CompressionError(
-            "Ghostscript was not found. Install Ghostscript and restart the app, "
-            "or set GHOSTSCRIPT_PATH to the executable."
-        )
-
+) -> list[str]:
     command = [
         executable,
         "-sDEVICE=pdfwrite",
@@ -43,6 +42,8 @@ def run_ghostscript(
         "-dCompressFonts=true",
         "-dSubsetFonts=true",
         "-dEmbedAllFonts=true",
+        "-dStreamEffort=9",
+        "-dMaxInlineImageSize=0",
         "-dDownsampleColorImages=true",
         "-dColorImageDownsampleType=/Bicubic",
         f"-dColorImageResolution={profile.dpi}",
@@ -58,10 +59,47 @@ def run_ghostscript(
         "-dDownsampleMonoImages=true",
         "-dMonoImageDownsampleType=/Subsample",
         f"-dMonoImageResolution={profile.mono_dpi}",
-        f"-dJPEGQ={profile.jpeg_quality}",
-        f"-sOutputFile={output_path}",
-        str(input_path),
     ]
+    if profile.force_jpeg_reencode:
+        command.extend(
+            [
+                "-dPassThroughJPEGImages=false",
+                "-dPassThroughJPXImages=false",
+            ]
+        )
+    qfactor = min(1.0, max(0.0, profile.jpeg_qfactor))
+    image_parameters = (
+        f"<</ColorImageDict <</QFactor {qfactor:.3f} /Blend 1 "
+        "/HSamples [2 1 1 2] /VSamples [2 1 1 2]>> "
+        f"/GrayImageDict <</QFactor {qfactor:.3f} /Blend 1 "
+        "/HSamples [1 1 1 1] /VSamples [1 1 1 1]>>>> setdistillerparams"
+    )
+    command.extend(
+        [
+            f"-sOutputFile={output_path}",
+            "-c",
+            image_parameters,
+            "-f",
+            str(input_path),
+        ]
+    )
+    return command
+
+
+def run_ghostscript(
+    input_path: Path,
+    output_path: Path,
+    profile: CompressionProfile,
+    timeout_seconds: int,
+) -> None:
+    executable = find_ghostscript()
+    if not executable:
+        raise CompressionError(
+            "Ghostscript was not found. Install Ghostscript and restart the app, "
+            "or set GHOSTSCRIPT_PATH to the executable."
+        )
+
+    command = build_ghostscript_command(executable, input_path, output_path, profile)
     try:
         completed = run_hidden(
             command,

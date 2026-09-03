@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
@@ -25,7 +26,7 @@ async def api_pdf_to_jpg(file: Annotated[UploadFile, File(...)]) -> FileResponse
     try:
         input_path, filename, _ = await workspace.save_pdf(file)
         output = workspace.output(f"{Path(filename).stem}_jpg.zip")
-        count = pdf_to_jpg_zip(input_path, output)
+        count = await run_in_threadpool(pdf_to_jpg_zip, input_path, output)
         return workspace.download(output, "application/zip", output.name, {"X-Image-Count": str(count)})
     except (ValueError, PDFWorkbenchError) as exc:
         workspace.cleanup_on_error()
@@ -42,7 +43,7 @@ async def api_pdf_to_word(file: Annotated[UploadFile, File(...)]) -> FileRespons
         input_path, filename, _ = await workspace.save_pdf(file)
         get_pdf_page_count(input_path)
         output = workspace.output(f"{Path(filename).stem}.docx")
-        pdf_to_docx(input_path, output)
+        await run_in_threadpool(pdf_to_docx, input_path, output)
         media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         return workspace.download(output, media_type, output.name)
     except (ValueError, PDFWorkbenchError) as exc:
@@ -59,7 +60,7 @@ async def api_pdf_to_powerpoint(file: Annotated[UploadFile, File(...)]) -> FileR
     try:
         input_path, filename, _ = await workspace.save_pdf(file)
         output = workspace.output(f"{Path(filename).stem}.pptx")
-        count = pdf_to_pptx(input_path, output)
+        count = await run_in_threadpool(pdf_to_pptx, input_path, output)
         media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         return workspace.download(output, media_type, output.name, {"X-Slides": str(count)})
     except (ValueError, PDFWorkbenchError) as exc:
@@ -76,7 +77,7 @@ async def api_pdf_to_excel(file: Annotated[UploadFile, File(...)]) -> FileRespon
     try:
         input_path, filename, _ = await workspace.save_pdf(file)
         output = workspace.output(f"{Path(filename).stem}.xlsx")
-        sheets, tables = pdf_to_xlsx(input_path, output)
+        sheets, tables = await run_in_threadpool(pdf_to_xlsx, input_path, output)
         media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         return workspace.download(
             output,

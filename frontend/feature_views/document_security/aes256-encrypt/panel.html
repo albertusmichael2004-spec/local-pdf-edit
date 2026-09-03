@@ -1,0 +1,12 @@
+<section class="tool-panel" data-title="AES-256 Encrypt" id="aes256-encrypt">
+  <div class="panel-intro"><h2>AES-256 Encrypt</h2><p>Encrypt any file inside a password-protected 7z container using AES-256 with encrypted file-name headers.</p></div>
+  <div class="dropzone" data-input="aes256File"><input hidden id="aes256File" type="file"/><div class="drop-icon">＋</div><strong>Drop any file</strong><span>Documents, ZIP files, and images are supported.</span></div>
+  <div class="file-meta hidden" data-filemeta-for="aes256File"></div>
+  <div class="two-col">
+    <label class="field"><span>Password</span><input autocomplete="new-password" id="aes256Password" minlength="8" type="password"/></label>
+    <label class="field"><span>Confirm password</span><input autocomplete="new-password" id="aes256Confirm" minlength="8" type="password"/></label>
+  </div>
+  <p class="helper security-note">Output: AES-256 encrypted .7z. The password and original file are never uploaded.</p>
+  <button class="btn primary" id="aes256Btn">Encrypt with AES-256</button>
+  <div class="status hidden" id="aes256Status"></div>
+</section>

@@ -3,7 +3,10 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+from backend.core.progress import report_fraction, report_progress
+
 from backend.services.shared.ocr.models import OCRPage
+from backend.services.shared.ocr.profile import OCRProfile, load_active_profile
 from backend.services.shared.ocr.tesseract_layout import (
     recognize_best_page,
 )
@@ -14,6 +17,7 @@ def recognize_images(
     tesseract_executable: str,
     language: str,
     quality: str,
+    profile: OCRProfile | None = None,
 ) -> list[OCRPage]:
     """
     Run OCR for all uploaded images in their current order.
@@ -27,6 +31,8 @@ def recognize_images(
     """
 
     results: list[OCRPage] = []
+    active_profile = profile or load_active_profile()
+    report_progress("Preparing OCR search profile", percent=22, detail=quality)
 
     with tempfile.TemporaryDirectory(
         prefix="pdfwb-image-ocr-"
@@ -48,8 +54,10 @@ def recognize_images(
                 tesseract_executable=tesseract_executable,
                 language=language,
                 quality=quality,
+                profile=active_profile,
             )
 
             results.append(result)
+            report_fraction("Recognizing uploaded images", index, len(image_paths), 24, 88)
 
     return results

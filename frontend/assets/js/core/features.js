@@ -1,6 +1,8 @@
 export const FEATURES = {
   merge: { title: "Merge PDF", view: "/frontend/feature_views/quick_tools/merge/panel.html", controller: "/frontend/feature_views/quick_tools/merge/controller.js" },
   split: { title: "Split PDF", view: "/frontend/feature_views/quick_tools/split/panel.html", controller: "/frontend/feature_views/quick_tools/split/controller.js" },
+  "media-converter": { title: "Media Converter", view: "/frontend/feature_views/media/media-converter/panel.html", controller: "/frontend/feature_views/media/media-converter/controller.js" },
+  "media-compressor": { title: "Media Compressor", view: "/frontend/feature_views/media/media-compressor/panel.html", controller: "/frontend/feature_views/media/media-compressor/controller.js" },
 
   "remove-pages": { title: "Remove pages", view: "/frontend/feature_views/edit_pdf/remove-pages/panel.html", controller: "/frontend/feature_views/edit_pdf/remove-pages/controller.js" },
   "extract-pages": { title: "Extract pages", view: "/frontend/feature_views/edit_pdf/extract-pages/panel.html", controller: "/frontend/feature_views/edit_pdf/extract-pages/controller.js" },
@@ -26,6 +28,14 @@ export const FEATURES = {
   unlock: { title: "Unlock PDF", view: "/frontend/feature_views/pdf_security/unlock-pdf/panel.html", controller: "/frontend/feature_views/pdf_security/unlock-pdf/controller.js" },
   protect: { title: "Protect PDF", view: "/frontend/feature_views/pdf_security/protect-pdf/panel.html", controller: "/frontend/feature_views/pdf_security/protect-pdf/controller.js" },
   sha256: { title: "SHA-256 PDF", view: "/frontend/feature_views/pdf_security/sha256-pdf/panel.html", controller: "/frontend/feature_views/pdf_security/sha256-pdf/controller.js" },
-  "sha256-compare": { title: "Compare SHA-256", view: "/frontend/feature_views/pdf_security/compare-sha256/panel.html", controller: "/frontend/feature_views/pdf_security/compare-sha256/controller.js" },
+  "sha256-compare": { title: "Compare SHA-256", view: "/frontend/feature_views/document_security/compare-sha256/panel.html?v=4.6", controller: "/frontend/feature_views/document_security/compare-sha256/controller.js?v=4.6" },
   "compare-pdf": { title: "Compare PDF", view: "/frontend/feature_views/pdf_security/compare-pdf/panel.html", controller: "/frontend/feature_views/pdf_security/compare-pdf/controller.js" },
+
+  "document-security-all": { title: "Document Security — All in One", view: "/frontend/feature_views/document_security/all-in-one/panel.html?v=4.8", controller: "/frontend/feature_views/document_security/all-in-one/controller.js?v=4.8" },
+  "document-sha256": { title: "SHA-256 File", view: "/frontend/feature_views/document_security/sha256-file/panel.html", controller: "/frontend/feature_views/document_security/sha256-file/controller.js" },
+  "document-decrypt": { title: "Decrypt File / Archive", view: "/frontend/feature_views/document_security/decrypt/panel.html", controller: "/frontend/feature_views/document_security/decrypt/controller.js" },
+  "extract-archive": { title: "Extract Archive", view: "/frontend/feature_views/document_security/extract-archive/panel.html?v=4.9", controller: "/frontend/feature_views/document_security/extract-archive/controller.js?v=4.9" },
+  "document-password-protect": { title: "Password Protect File", view: "/frontend/feature_views/document_security/password-protect/panel.html", controller: "/frontend/feature_views/document_security/password-protect/controller.js" },
+  "create-7z": { title: "Create 7z Archive", view: "/frontend/feature_views/document_security/create-7z/panel.html", controller: "/frontend/feature_views/document_security/create-7z/controller.js" },
+  "aes256-encrypt": { title: "AES-256 Encrypt", view: "/frontend/feature_views/document_security/aes256-encrypt/panel.html", controller: "/frontend/feature_views/document_security/aes256-encrypt/controller.js" },
 };

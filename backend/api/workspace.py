@@ -8,7 +8,6 @@ from fastapi import UploadFile
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
-from backend.core.config import settings
 from backend.utils.file_uploads import safe_filename, save_upload
 
 
@@ -27,7 +26,7 @@ class RequestWorkspace:
     ) -> tuple[Path, str, int]:
         filename = safe_filename(upload.filename, fallback)
         path = self.path / f"{prefix}{filename}"
-        size = await save_upload(upload, path, settings.max_file_bytes, require_pdf=True)
+        size = await save_upload(upload, path, require_pdf=True)
         return path, filename, size
 
     async def save_file(
@@ -38,8 +37,17 @@ class RequestWorkspace:
     ) -> tuple[Path, str, int]:
         filename = safe_filename(upload.filename, fallback)
         path = self.path / f"{prefix}{filename}"
-        size = await save_upload(upload, path, settings.max_file_bytes, require_pdf=False)
+        size = await save_upload(upload, path, require_pdf=False)
         return path, filename, size
+
+    async def save_media_file(
+        self,
+        upload: UploadFile,
+        fallback: str,
+        prefix: str = "",
+    ) -> tuple[Path, str, int]:
+        """Compatibility alias for media routes using the uncapped file spooler."""
+        return await self.save_file(upload, fallback, prefix)
 
     def output(self, filename: str) -> Path:
         return self.path / filename

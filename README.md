@@ -1,6 +1,11 @@
 # Local PDF Workbench v4.1
 
-A local-first PDF desktop workbench built with Python, FastAPI, PyWebView, and a modular HTML/CSS/JavaScript frontend. Documents are processed on the local computer; the application does not require a cloud conversion API.
+A local-first PDF desktop workbench built with Python, FastAPI, a Chromium app shell, and a modular HTML/CSS/JavaScript frontend. Documents are processed on the local computer; the application does not require a cloud conversion API.
+
+The working tree may also contain a native Kotlin/Jetpack Compose Android
+application under [`apps/android`](apps/android). Platform code stays isolated
+so Android dependencies never leak into the Python desktop runtime; `apps/`
+and `training/` are development-only and excluded from release commits.
 
 ## Copyright and Usage
 
@@ -11,6 +16,12 @@ This repository is publicly available for viewing, educational reference, and po
 Third-party libraries, frameworks, and external software used by this project remain subject to their respective licenses and terms.
 
 ## Main product families
+
+### Media Tools
+
+- Media Converter: content-based type detection and capability-aware target dropdowns for image, video, audio, PDF, and ebook files
+- Media Compressor: image/video/audio quality presets with keep-original or compatible target formats
+- Multiple outputs are packaged as ZIP64; one output downloads directly
 
 ### Edit PDF
 
@@ -46,7 +57,22 @@ Third-party libraries, frameworks, and external software used by this project re
 - Compare SHA-256
 - Compare PDF
 
+### Document Security
+
+- All in One: password + 7z + AES-256 with encrypted headers
+- SHA-256 File: generate an integrity fingerprint for any uploaded file type
+- Decrypt File / Archive: password-protected ZIP and 7z
+- Password Protect File: WinZip AES-256 ZIP
+- Create 7z Archive
+- AES-256 Encrypt: encrypted 7z
+
 Merge and Split remain available as Quick Tools.
+
+## Processing progress and large files
+
+Every upload-based operation now reports its active stage, elapsed time, estimated remaining time when measurable, and feature-specific progress such as page X of Y, file X of Y, or the current encryption/OCR stage. The existing final status text remains `Done. Output is ready.`
+
+Uploads have no application-defined size cap. File staging and SHA-256 use large streaming chunks, hashing reads directly from FastAPI's upload spool, CPU/blocking engines run outside the API event loop, and downloads for very large inputs stream through the browser instead of buffering the entire output in JavaScript memory. Runtime still depends on storage throughput, page count, codecs, OCR complexity, installed engines, and CPU/GPU performance; a fixed one- or three-minute deadline cannot be guaranteed for every 10 GB workload.
 
 
 ## v4.1 visual edit workflow updates
@@ -70,6 +96,8 @@ pdf_workbench/
 │   │   ├── convert_to_pdf/
 │   │   ├── convert_from_pdf/
 │   │   ├── pdf_security/
+│   │   ├── document_security/
+│   │   ├── media/
 │   │   ├── quick_tools/
 │   │   └── shared/
 │   └── utils/
@@ -81,6 +109,9 @@ pdf_workbench/
 ├── tests/
 ├── docs/
 ├── distribution/windows/
+├── apps/                 # development-only Android project; ignored by Git
+├── training/             # development-only OCR training; ignored by Git
+├── Start Local PDF Workbench.cmd
 ├── desktop.py
 ├── run.py
 ├── requirements.txt
@@ -90,7 +121,7 @@ pdf_workbench/
 
 See `docs/ARCHITECTURE.md` for the design rationale.
 
-## Replacing the old project while keeping the existing `.venv`
+## Windows source setup and runtime layout
 
 Target project folder:
 
@@ -98,7 +129,10 @@ Target project folder:
 C:\Users\<username>\Projects\pdf_workbench
 ```
 
-This source package intentionally **does not contain `.venv`** and the runtime `requirements.txt` has not been changed from the supplied v3 codebase.
+The working checkout keeps one local `.venv` for development. It is ignored by
+Git and is never required by the portable release. The `apps/` Android project
+and `training/` OCR experiments are also development-only folders and are
+intentionally excluded from release commits.
 
 Recommended migration:
 
@@ -110,7 +144,7 @@ Recommended migration:
 .venv\
 ```
 
-4. Remove obsolete old-source/build items such as the old `app\`, `build\`, `dist\`, old root build BAT files, and old PyInstaller spec if they are still present.
+4. Keep generated folders (`build\`, `dist\`, `release\`, `tmp\`) out of Git. If an old checkout contains duplicate environments, retain only one usable `.venv`.
 5. Copy the contents of this `pdf_workbench` folder into the permanent project folder.
 6. Verify the existing environment:
 
@@ -119,11 +153,23 @@ cd "C:\Users\<username>\Projects\pdf_workbench"
 .\.venv\Scripts\python.exe .\scripts\check_system.py
 ```
 
-7. Run the live-source desktop app:
+7. Install/refresh the desktop launcher (this is also safe for an existing `.venv`):
 
 ```powershell
-& ".\.venv\Scripts\pythonw.exe" ".\desktop.py"
+.\scripts\setup_windows.ps1
 ```
+
+8. Double-click `Start Local PDF Workbench.cmd`, or run the source launcher from PowerShell:
+
+```powershell
+Start-Process ".\.venv\Scripts\pythonw.exe" -ArgumentList "-I","-m","desktop" -WorkingDirectory (Get-Location)
+```
+
+The launcher opens a dedicated Chromium app window with normal user
+permissions. This avoids WebView2 data-directory failures and .NET
+message-pump hangs that can mark `pythonw.exe` as “Not responding”. The local
+API and native file operations remain on `127.0.0.1`; no document is uploaded
+to the internet.
 
 Or recreate the Desktop shortcut:
 
@@ -132,11 +178,22 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\scripts\create_desktop_shortcut.ps1
 ```
 
-The shortcut points back to `desktop.py`; saved source changes are picked up the next time the app starts. No PyInstaller rebuild is required for this development workflow.
+The launcher is installed in editable mode and points back to this source tree,
+so saved source changes are picked up the next time the app starts. It first
+validates the source environment and falls back to
+`release\LocalPDFWorkbench\LocalPDFWorkbench.exe` when the source runtime is
+unavailable. No PyInstaller rebuild is required for source development.
+
+The desktop shell requires an installed Google Chrome or Microsoft Edge. File
+and folder pickers use native Windows PowerShell/.NET dialogs, so they do not
+depend on Tcl/Tk being present in the Python or PyInstaller runtime.
 
 ## Existing `.venv` and package installation
 
-Because runtime requirements are unchanged, a healthy old `.venv` should be reusable as-is.
+The media pipeline adds `pillow-heif`, `CairoSVG`, `mutagen`, `psutil`, and
+`EbookLib`. A healthy existing `.venv` can be reused. The setup script checks
+it before installation and warns if it uses a managed runtime; the portable
+build remains self-contained.
 
 To reuse it without reinstalling packages:
 
@@ -157,6 +214,10 @@ Some features depend on Windows applications rather than Python packages:
 - **Ghostscript** → Compress PDF
 - **Tesseract OCR** → OCR PDF
 - **LibreOffice** → optional higher-fidelity Office-to-PDF conversion; required for legacy `.doc`, `.ppt`, `.xls`
+- **FFmpeg + ffprobe** → video/audio detection, conversion, and compression
+- **Calibre ebook-convert** → EPUB/PDF ebook conversion
+
+The UI only offers formats supported by the engines currently installed. MIDI synthesis and true bitmap-to-vector tracing remain optional, separate pipelines and are not advertised as normal audio/image conversions.
 
 Check status with:
 
@@ -199,8 +260,10 @@ If PyInstaller is not already installed in the development `.venv`, install the 
 Build:
 
 ```powershell
-.\distribution\windows\build_portable.ps1
+.\.venv\Scripts\python.exe .\distribution\build_or_update.py
 ```
+
+This single launcher installs missing build-only packages when needed, detects whether it is creating or updating the portable app, rebuilds it, and refreshes `release\LocalPDFWorkbench`. The lower-level `distribution\windows\build_portable.ps1` remains available for manual builds.
 
 The result is:
 
@@ -210,8 +273,23 @@ release\LocalPDFWorkbench\
 └── _internal\...
 ```
 
-Share the **whole folder**, not only the EXE. The receiving computer does not need Python or VS Code. Ghostscript/Tesseract remain external requirements for Compression/OCR respectively.
+Share the **whole folder**, not only the EXE. The receiving computer does not
+need Python or VS Code. Ghostscript and Tesseract remain external requirements
+for Compression/OCR; FFprobe, Calibre, and LibreOffice are optional engines
+for their respective features.
+
+## OCR training (development-only)
+
+The `training/` tree is intentionally ignored by Git and is not included in
+the desktop release. After preparing both training and validation datasets,
+run:
+
+```powershell
+.\.venv\Scripts\python.exe .\training\run_training.py
+```
+
+The launcher resumes the newest unfinished checkpoint. If no unfinished checkpoint exists, it starts a new training run.
 
 ## Privacy
 
-The FastAPI server binds to `127.0.0.1`. Uploaded documents are processed locally in temporary workspaces and scheduled for cleanup after responses are delivered. No cloud API is required by this project.
+The FastAPI server binds to `127.0.0.1`. Uploaded files have no application-imposed size limit and stream to local temporary workspaces; practical capacity still depends on disk space, memory, filesystem, and processing-engine limits. Temporary workspaces are scheduled for cleanup after responses are delivered. No cloud API is required by this project.

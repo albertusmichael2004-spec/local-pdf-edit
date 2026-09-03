@@ -6,6 +6,7 @@ from typing import Any
 import fitz
 
 from backend.core.errors import EditingError
+from backend.core.progress import report_fraction, report_progress
 from backend.services.edit_pdf.extract_pages import extract_pages
 
 
@@ -61,7 +62,9 @@ def organize_with_plan(input_path: Path, output_path: Path, plan: list[dict[str,
                     inserted = result[result.page_count - 1]
                     if rotation:
                         inserted.set_rotation((inserted.rotation + rotation) % 360)
+                    report_fraction("Rebuilding arranged pages", position, len(plan), 24, 86)
 
+                report_progress("Saving organized PDF", percent=92)
                 result.save(output_path, garbage=4, deflate=True)
                 return result.page_count
             finally:

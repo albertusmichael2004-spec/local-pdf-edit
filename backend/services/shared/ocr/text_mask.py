@@ -15,7 +15,7 @@ def remove_long_rules(gray: np.ndarray) -> np.ndarray:
     return cleaned
 
 
-def isolate_text_lines(gray: np.ndarray) -> np.ndarray:
+def isolate_text_lines(gray: np.ndarray, horizontal_padding_ratio: float = 0.01) -> np.ndarray:
     """Hide large illustrations while retaining compact printed text rows."""
     height, width = gray.shape
     _, binary = cv2.threshold(
@@ -36,10 +36,7 @@ def isolate_text_lines(gray: np.ndarray) -> np.ndarray:
         height // 180,
     )
 
-    horizontal_padding = max(
-        18,
-        width // 100,
-    )
+    horizontal_padding = max(18, int(width * horizontal_padding_ratio))
 
     for contour in contours:
         (

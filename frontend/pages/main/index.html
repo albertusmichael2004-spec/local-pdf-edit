@@ -5,23 +5,37 @@
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Local PDF Workbench</title>
 <link href="/frontend/assets/images/app-logo-64.png" rel="icon" type="image/png"/>
+<script type="importmap">{"imports":{"/frontend/assets/js/core/api.js":"/frontend/assets/js/core/api.js?v=4.5","/frontend/assets/js/core/dom.js":"/frontend/assets/js/core/dom.js?v=4.5","/frontend/assets/js/core/downloads.js":"/frontend/assets/js/core/downloads.js?v=4.5","/frontend/assets/js/core/file_store.js":"/frontend/assets/js/core/file_store.js?v=4.5","/frontend/assets/js/core/progress.js":"/frontend/assets/js/core/progress.js?v=4.5","/frontend/feature_views/document_security/shared.js":"/frontend/feature_views/document_security/shared.js?v=4.5"}}</script>
 
-<link href="/frontend/assets/css/base.css" rel="stylesheet"/><link href="/frontend/assets/css/layout.css" rel="stylesheet"/><link href="/frontend/assets/css/components.css" rel="stylesheet"/><link href="/frontend/assets/css/features.css" rel="stylesheet"/></head>
-<body>
+<link href="/frontend/assets/css/base.css?v=4.5" rel="stylesheet"/><link href="/frontend/assets/css/layout.css?v=4.5" rel="stylesheet"/><link href="/frontend/assets/css/components.css?v=4.7" rel="stylesheet"/><link href="/frontend/assets/css/features.css?v=4.5" rel="stylesheet"/></head>
+<body class="shell-loading">
+<div aria-live="polite" class="app-startup" id="appStartup">
+<div class="app-startup-mark">PDF</div>
+<h1>Local PDF Workbench</h1>
+<p id="appStartupLabel">Loading application features…</p>
+<div class="app-startup-track"><span id="appStartupBar"></span></div>
+</div>
 <div class="app-frame">
 <aside class="sidebar">
 <div class="brand-row">
 <div class="brand-mark"><img alt="PDF Workbench logo" src="/frontend/assets/images/app-logo-128.png"/></div>
 <div>
 <div class="brand-name">Local PDF Workbench</div>
-<div class="brand-sub">Private desktop PDF tools</div>
 </div>
 </div>
-<div class="system-badge" id="systemBadge">Checking local engines…</div>
 <nav aria-label="PDF tools" class="tool-nav">
 <div class="nav-caption">QUICK TOOLS</div>
 <button class="nav-tool active" data-tool="merge">Merge PDF</button>
 <button class="nav-tool" data-tool="split">Split PDF</button>
+<div class="category open">
+<button class="category-toggle" type="button">
+<span>Media Tools</span><span class="chevron">⌄</span>
+</button>
+<div class="submenu">
+<button class="nav-tool nav-tool-featured" data-tool="media-converter">Media Converter</button>
+<button class="nav-tool" data-tool="media-compressor">Media Compressor</button>
+</div>
+</div>
 <div class="category open">
 <button class="category-toggle" type="button">
 <span>Edit PDF</span><span class="chevron">⌄</span>
@@ -69,8 +83,22 @@
 <button class="nav-tool" data-tool="unlock">Unlock PDF</button>
 <button class="nav-tool" data-tool="protect">Protect PDF</button>
 <button class="nav-tool" data-tool="sha256">SHA-256 PDF</button>
-<button class="nav-tool" data-tool="sha256-compare">Compare SHA-256</button>
 <button class="nav-tool" data-tool="compare-pdf">Compare PDF</button>
+</div>
+</div>
+<div class="category">
+<button class="category-toggle" type="button">
+<span>Document Security</span><span class="chevron">⌄</span>
+</button>
+<div class="submenu">
+<button class="nav-tool nav-tool-featured" data-tool="document-security-all">All in One</button>
+<button class="nav-tool" data-tool="document-sha256">SHA-256 File</button>
+<button class="nav-tool" data-tool="sha256-compare">Compare SHA-256</button>
+<button class="nav-tool" data-tool="document-decrypt">Decrypt File / Archive</button>
+<button class="nav-tool" data-tool="extract-archive">Extract Archive</button>
+<button class="nav-tool" data-tool="document-password-protect">Password Protect File</button>
+<button class="nav-tool" data-tool="create-7z">Create 7z Archive</button>
+<button class="nav-tool" data-tool="aes256-encrypt">AES-256 Encrypt</button>
 </div>
 </div>
 </nav>
@@ -82,7 +110,6 @@
 <main class="workspace">
 <header class="workspace-header">
 <div>
-<span class="eyebrow">LOCAL • PRIVATE • DRAG &amp; DROP</span>
 <h1 id="toolTitle">Merge PDF</h1>
 </div>
 <div class="header-pill">Windows desktop-ready</div>
@@ -118,9 +145,9 @@
 
 
 
-<div id="featureHost"></div><footer class="workspace-footer"><span>Local PDF Workbench v4.1</span><span>FastAPI • PyMuPDF • pypdf • Ghostscript • Tesseract • LibreOffice • pywebview</span></footer>
+<div id="featureHost"></div>
 </main>
 </div>
 
-<script src="/frontend/pages/main/app_shell.js" type="module"></script></body>
+<script src="/frontend/pages/main/app_shell.js?v=6.0" type="module"></script></body>
 </html>

@@ -1,0 +1,20 @@
+<section class="tool-panel" data-title="Compare SHA-256" id="sha256-compare">
+  <div class="panel-intro">
+    <h2>Compare SHA-256</h2>
+    <p>Compare any two files byte-for-byte, regardless of type or size.</p>
+  </div>
+  <div class="two-drop">
+    <div>
+      <div class="drop-label">Original</div>
+      <div class="dropzone compact" data-input="shaLeft"><input hidden id="shaLeft" type="file"/><div class="drop-icon">＋</div><strong>Drop first file</strong><span>Any file type, no application size limit.</span></div>
+      <div class="file-meta hidden" data-filemeta-for="shaLeft"></div>
+    </div>
+    <div>
+      <div class="drop-label">Comparison</div>
+      <div class="dropzone compact" data-input="shaRight"><input hidden id="shaRight" type="file"/><div class="drop-icon">＋</div><strong>Drop second file</strong><span>Files are hashed locally in chunks.</span></div>
+      <div class="file-meta hidden" data-filemeta-for="shaRight"></div>
+    </div>
+  </div>
+  <button class="btn primary" id="shaCompareBtn">Compare hashes</button>
+  <div class="status hidden hash-output" id="shaCompareStatus"></div>
+</section>

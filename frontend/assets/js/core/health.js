@@ -8,7 +8,9 @@ export async function loadHealth() {
     const gs = data.ghostscript ? "GS ✓" : "GS ✕";
     const tess = data.tesseract ? "OCR ✓" : "OCR ✕";
     const office = data.libreoffice ? "LibreOffice ✓" : "Office fallback ✓";
-    $("#systemBadge").textContent = `${gs}  •  ${tess}  •  ${office}  •  max ${data.max_file_mb} MB/file`;
+    const media = data.ffmpeg && data.ffprobe ? "Media ✓" : "Media ✕";
+    const ebook = data.calibre ? "Ebook ✓" : "Ebook ✕";
+    $("#systemBadge").textContent = `${gs}  •  ${tess}  •  ${office}  •  ${media}  •  ${ebook}  •  Uploads uncapped`;
   } catch {
     $("#systemBadge").textContent = "Local engine unavailable";
   }

@@ -1,0 +1,34 @@
+<section class="tool-panel" data-title="Document Security — All in One" id="document-security-all">
+  <div class="panel-intro">
+    <span class="feature-kicker">RECOMMENDED</span>
+    <h2>Document Security — All in One</h2>
+    <p>Protect any document, image, ZIP, or other file with one action. The result is converted to 7z, encrypted with AES-256, password protected, and its file-name header is hidden.</p>
+  </div>
+  <div class="security-flow" aria-label="Security steps">
+    <div><strong>1</strong><span>Password protection</span></div>
+    <div><strong>2</strong><span>7z container</span></div>
+    <div><strong>3</strong><span>AES-256 encryption</span></div>
+  </div>
+  <div class="dropzone" data-input="allSecurityFile">
+    <input hidden id="allSecurityFile" type="file"/>
+    <div class="drop-icon">＋</div><strong>Drop any file</strong>
+    <span>For a complete folder, use the Windows folder picker below.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="allSecurityFile"></div>
+  <div class="action-row native-source-row">
+    <button class="btn secondary" id="chooseAllSecurityNative" type="button">Choose local file</button>
+    <button class="btn secondary" id="chooseAllSecurityFolder" type="button">Choose local folder</button>
+    <span class="helper">The selected file or complete folder tree will be packed into one encrypted 7z.</span>
+  </div>
+  <div class="file-meta hidden" id="allSecurityNativeMeta"></div>
+  <div class="two-col">
+    <label class="field"><span>Password</span><input autocomplete="new-password" id="allSecurityPassword" minlength="8" type="password"/></label>
+    <label class="field"><span>Confirm password</span><input autocomplete="new-password" id="allSecurityConfirm" minlength="8" type="password"/></label>
+  </div>
+  <p class="helper security-note">Keep this password safe. ZIP, media, PDF, and other pre-compressed files automatically use fast encryption without wasteful recompression.</p>
+  <label class="checkbox-row"><input id="reduceAllSecuritySize" type="checkbox"/> Reduce file size with balanced quality before encryption</label>
+  <p class="helper">Applies moderate optimization to a selected file. Folders retain every file unchanged and are compressed as one unit.</p>
+  <label class="checkbox-row danger-check"><input id="deleteAllSecurityOriginal" type="checkbox"/> Move the original file or folder to Recycle Bin only after the encrypted archive passes validation</label>
+  <button class="btn primary" id="allSecurityBtn">Secure file or folder and create 7z</button>
+  <div class="status hidden" id="allSecurityStatus"></div>
+</section>

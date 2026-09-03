@@ -5,7 +5,9 @@ from pathlib import Path
 import fitz
 
 from backend.services.edit_pdf.add_watermark import WatermarkRule, add_text_watermarks
+from backend.services.edit_pdf.crop_pdf import crop_pages_with_plan
 from backend.services.edit_pdf.organize_pdf import organize_with_plan
+from backend.services.edit_pdf.rotate_pdf import rotate_pages_with_plan
 from backend.services.shared.preview import render_page_preview
 
 
@@ -53,3 +55,31 @@ def test_multiple_watermark_rules_can_target_different_pages(tmp_path: Path, mak
         assert "ONE" in doc[0].get_text()
         assert "ONE" not in doc[1].get_text()
         assert "THREE" in doc[2].get_text()
+
+
+def test_rotation_plan_supports_different_angles_per_page(tmp_path: Path, make_pdf):
+    source = make_pdf(tmp_path / "source.pdf", pages=3)
+    output = tmp_path / "rotated-plan.pdf"
+    rotate_pages_with_plan(source, output, {0: 90, 1: 180})
+    with fitz.open(output) as doc:
+        assert [page.rotation for page in doc] == [90, 180, 0]
+
+
+def test_crop_plan_supports_different_margins_per_page(tmp_path: Path, make_pdf):
+    source = make_pdf(tmp_path / "source.pdf", pages=3)
+    output = tmp_path / "cropped-plan.pdf"
+    crop_pages_with_plan(
+        source,
+        output,
+        {
+            0: (10, 0, 0, 0),
+            1: (0, 20, 0, 0),
+        },
+    )
+    with fitz.open(output) as doc:
+        assert doc[0].rect.width < 400
+        assert doc[0].rect.height == 600
+        assert doc[1].rect.width == 400
+        assert doc[1].rect.height < 600
+        assert doc[2].rect.width == 400
+        assert doc[2].rect.height == 600

@@ -25,11 +25,19 @@ class ConversionError(PDFWorkbenchError):
     pass
 
 
+class MediaProcessingError(PDFWorkbenchError):
+    pass
+
+
 class OCRError(PDFWorkbenchError):
     pass
 
 
 class SecurityError(PDFWorkbenchError):
+    pass
+
+
+class DocumentSecurityError(PDFWorkbenchError):
     pass
 
 

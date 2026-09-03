@@ -7,7 +7,10 @@ from .generic_cleanup import clean_ocr_line
 
 
 def _group_words_by_line(page: OCRPage) -> list[list[OCRWord]]:
-    words = [word for word in page.words if usable_word(word, page.ocr_width)]
+    words = [
+        word for word in page.words
+        if usable_word(word, page.ocr_width, page.min_word_confidence)
+    ]
     if page.variant == "line-ensemble":
         line_ids = sorted({word.line for word in words})
         return [
