@@ -1,4 +1,6 @@
 import { $, escapeHtml, formatBytes } from "./dom.js";
+import { openPdfPreview } from "/frontend/assets/js/core/pdf_preview_modal.js?v=7.5";
+import { previewKind } from "/frontend/assets/js/core/previews.js?v=7.5";
 
 const fileState = new Map();
 const callbacks = new Map();
@@ -52,14 +54,30 @@ export function clearFiles(inputId) {
   notify(inputId);
 }
 
+// Reset the in-memory file selections without notifying controllers that are
+// about to be detached by the feature loader. This is used by "Create another
+// one" so every feature starts clean without reloading the document.
+export function resetAllFiles() {
+  fileState.clear();
+  callbacks.clear();
+  document.querySelectorAll('input[type="file"]').forEach((input) => {
+    input.value = "";
+  });
+}
+
 export function onFilesChanged(inputId, callback) {
   const list = callbacks.get(inputId) || [];
-  list.push(callback);
+  list.push({ callback, input: $(`#${inputId}`) });
   callbacks.set(inputId, list);
 }
 
 function notify(inputId) {
-  for (const callback of callbacks.get(inputId) || []) {
+  const activeInput = $(`#${inputId}`);
+  const activeBindings = (callbacks.get(inputId) || []).filter(({ input }) => (
+    input === activeInput && input?.isConnected
+  ));
+  callbacks.set(inputId, activeBindings);
+  for (const { callback } of activeBindings) {
     callback(getFiles(inputId));
   }
 }
@@ -78,9 +96,14 @@ export function updateFileMeta(inputId) {
   meta.classList.remove("hidden");
   if (files.length === 1) {
     const file = files[0];
-    meta.innerHTML = `<strong>${escapeHtml(file.name)}</strong> • ${formatBytes(file.size)}`;
+    const bytes = Number(file.workflowBytes ?? file.size);
+    const name = previewKind(file) === "pdf"
+      ? `<button class="file-name-preview" title="Preview ${escapeHtml(file.name)}" type="button">${escapeHtml(file.name)}</button>`
+      : `<strong>${escapeHtml(file.name)}</strong>`;
+    meta.innerHTML = `${name} • ${formatBytes(bytes)}`;
+    meta.querySelector(".file-name-preview")?.addEventListener("click", () => openPdfPreview(file));
     return;
   }
-  const total = files.reduce((sum, file) => sum + file.size, 0);
+  const total = files.reduce((sum, file) => sum + Number(file.workflowBytes ?? file.size), 0);
   meta.innerHTML = `<strong>${files.length} files selected</strong> • ${formatBytes(total)}`;
 }

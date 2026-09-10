@@ -38,10 +38,11 @@ backend/services/
 
 `document_security/hash_file.py` exposes SHA-256 hashing for arbitrary file types. Both PDF Security and Document Security reuse the streaming primitive in `shared/file_hash.py`, so hashing behavior stays identical without coupling the generic feature to PDF validation.
 
-The Edit PDF family now includes two feature-specific support modules in addition to the eight primary feature files:
+The Edit PDF family includes focused support modules in addition to the primary feature files:
 
 - `watermark_fonts.py` resolves popular installed fonts and user-uploaded custom fonts.
 - `add_watermark.py` supports multiple staged watermark rules in one final export.
+- `redact_pdf.py` resolves normalized visible-page rectangles, applies native PDF redactions, inserts optional secure appearance rasters, and verifies the sanitized output.
 
 Persistent user data lives under `data/`. Custom watermark font binaries are created at runtime in `data/fonts/` and are ignored by Git.
 
@@ -54,6 +55,26 @@ Media endpoints are split into probe/capability and job routers under `backend/a
 The shared upload spooler applies no application-level size cap to any feature. Archive extraction retains a separately named expanded-output guard to limit zip-bomb impact; that guard does not restrict the uploaded archive size.
 
 The PDF preview endpoint returns page thumbnails plus page dimensions. The frontend can therefore render page grids lazily and synchronize visual crop margins with real PDF measurements.
+
+### Integrated Organize workflow
+
+Organize PDF is the first feature backed by a short-lived `WorkflowSession`. Its uploaded source, merged source pool, organized derivatives, and optional compressed/protected derivatives are registered as `WorkflowArtifact` records in a private operating-system temp directory. The browser receives opaque workflow/artifact IDs; filesystem paths are never exposed.
+
+The canonical Organize plan is `merge -> organize -> compress -> protect -> sha256`. The primary Organize dropzone accepts one or more PDFs; merge is inferred automatically when more than one source is present. Adding, removing, or reordering the source list reconciles the workflow source pool and rebuilds the page arrangement immediately. Unchanged source PDFs are retained by artifact ID instead of being uploaded again.
+
+Merge is materialized before page arrangement so the visual editor can work against the definitive page pool. Every source page carries a stable page identity plus its original source-artifact, filename, and source-page lineage. Every output page carries a separate instance identity, so reorder, duplication, deletion, and blank-page insertion do not rely on drifting page numbers. The frontend maps that lineage to stable per-file colors; blank pages deliberately have no source color.
+
+After execution, Redact, Split, Extract, Watermark, Crop, OCR, and Compare PDF can accept workflow artifacts without uploading the PDF again. A transferred artifact is used directly by the backend. Preview requests use the same reference, while a lightweight browser `File` placeholder keeps existing feature controllers and file metadata UI compatible.
+
+### Integrated Redact workflow
+
+Redact PDF reuses the workflow artifact store and multi-PDF source arrangement. Merge is inferred from the uploaded PDF list, while page-level reorder, rotate, remove, and blank-page insertion are optional and materialized before final marks are drawn. Marks are stored against stable page-instance IDs using normalized visible-page coordinates so browser zoom never changes the protected region.
+
+The secure engine uses native PyMuPDF redaction annotations to remove intersecting text, image pixels, and vector graphics before applying black, white, blur, or pixelate appearance. Output is written as a full non-incremental save with garbage collection, then reopened to verify that no text-character center remains in a protected rectangle. OCR may run before redaction; compression, AES-256 protection, and SHA-256 run afterward. If an optional post-step fails, the last successful sanitized artifact remains downloadable and transferable.
+
+Redact results can transfer to Watermark, Split, Extract, Crop, OCR, or Compare PDF. Compare receives both the pre-redaction artifact and sanitized artifact by opaque ID, so Original versus Redacted opens with both inputs detected automatically.
+
+Workflow directories are deleted explicitly by Finish or workspace reset and expire after a two-hour inactivity TTL. Per-request workspaces retain their existing download-response cleanup lifecycle.
 
 ## Frontend organization
 

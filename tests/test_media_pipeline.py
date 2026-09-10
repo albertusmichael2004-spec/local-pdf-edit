@@ -4,11 +4,12 @@ import zipfile
 from PIL import Image
 from pypdf import PdfReader
 
+from backend.services.media import capabilities as media_capabilities
 from backend.services.media.capabilities import capability_payload, targets_for
 from backend.services.media.engines.ffmpeg import build_ffmpeg_command
 from backend.services.media.facade import MediaJobFacade
 from backend.services.media.models import JobOptions, MediaProbeResult, MediaSource
-from backend.services.media.probe import probe_media
+from backend.services.media.probe import _canonical_av_format, probe_media
 
 
 def make_image(path: Path, color: str) -> Path:
@@ -25,6 +26,26 @@ def test_probe_reads_content_instead_of_extension(tmp_path: Path):
     assert result.format == "png"
     assert result.details["alpha"] is True
     assert any(item["format"] == "png" for item in targets_for(result))
+
+
+def test_mp4_family_probe_uses_embedded_major_brand_before_extension(tmp_path: Path):
+    misleading = tmp_path / "recording.mov"
+    assert _canonical_av_format(
+        misleading,
+        "mov,mp4,m4a,3gp,3g2,mj2",
+        {"major_brand": "isom"},
+    ) == "mp4"
+
+
+def test_mp4_family_probe_uses_extension_only_as_family_fallback(tmp_path: Path):
+    assert _canonical_av_format(
+        tmp_path / "meeting.mp4",
+        "mov,mp4,m4a,3gp,3g2,mj2",
+    ) == "mp4"
+    assert _canonical_av_format(
+        tmp_path / "camera.mov",
+        "mov,mp4,m4a,3gp,3g2,mj2",
+    ) == "mov"
 
 
 def test_image_facade_direct_and_zip64_batch(tmp_path: Path):
@@ -62,6 +83,58 @@ def test_ffmpeg_command_builder_uses_argument_list(tmp_path: Path):
     assert str(source) in command
     assert command[-1] == str(output)
     assert "shell=True" not in command
+
+
+def test_video_conversion_can_extract_audio(tmp_path: Path):
+    source = tmp_path / "clip.mov"
+    output = tmp_path / "clip.mp3"
+    probe = MediaProbeResult(
+        "video",
+        "mov",
+        "video/quicktime",
+        123,
+        {"has_audio": True},
+    )
+
+    command = build_ffmpeg_command(
+        "ffmpeg.exe",
+        source,
+        output,
+        probe,
+        JobOptions("converted", "mp3"),
+    )
+
+    assert command[command.index("-map") + 1] == "0:a:0"
+    assert "-vn" in command
+    assert "libmp3lame" in command
+    assert "-c:v" not in command
+
+
+def test_video_conversion_targets_include_audio_only_formats(monkeypatch):
+    monkeypatch.setattr(
+        media_capabilities,
+        "installed_tools",
+        lambda: {"ffmpeg": True},
+    )
+    monkeypatch.setattr(
+        media_capabilities,
+        "ffmpeg_targets",
+        lambda kind: ("mp4", "webm") if kind == "video" else ("mp3", "wav"),
+    )
+    probe = MediaProbeResult(
+        "video",
+        "mov",
+        "video/quicktime",
+        123,
+        {"has_audio": True},
+    )
+
+    normal_targets = targets_for(probe)
+    conversion_targets = targets_for(probe, allow_audio_from_video=True)
+
+    assert [item["format"] for item in normal_targets] == ["mp4", "webm"]
+    assert [item["format"] for item in conversion_targets] == ["mp4", "webm", "mp3", "wav"]
+    assert [item["format"] for item in conversion_targets if item.get("audio_only")] == ["mp3", "wav"]
 
 
 def test_animated_image_to_pdf_uses_one_page(tmp_path: Path):

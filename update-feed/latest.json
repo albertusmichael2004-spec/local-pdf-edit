@@ -1,0 +1,112 @@
+{
+  "product": "Local PDF Workbench",
+  "version": "4.1.3",
+  "installer_filename": "LocalPDFWorkbench-Setup-x64-latest.exe",
+  "installer_url": "https://1drv.ms/u/c/d9725a3220ae6d84/IQBkyOtXpNEnTbSeq_7PgoFtAV8RaT1TbY5T-9krC_VVhDg",
+  "installer_sha256": "76f294971cee55a40e284032802121889bc7788606df4548e2a01b2151bb96dd",
+  "installer_size": 126402299,
+  "release_notes": "- Backend reliability and workflow improvements.\n- User interface and document workflow improvements.\n- Installer, update, and distribution improvements.\n- Regression coverage and validation updates.\n- Documentation and project guidance updates.",
+  "release_notes_i18n": {
+    "en": [
+      "Backend reliability and workflow improvements.",
+      "User interface and document workflow improvements.",
+      "Installer, update, and distribution improvements.",
+      "Regression coverage and validation updates.",
+      "Documentation and project guidance updates."
+    ],
+    "id": [
+      "Peningkatan keandalan backend dan alur kerja.",
+      "Peningkatan antarmuka dan alur kerja dokumen.",
+      "Peningkatan installer, pembaruan, dan distribusi.",
+      "Peningkatan pengujian regresi dan validasi.",
+      "Pembaruan dokumentasi dan panduan proyek."
+    ]
+  },
+  "releases": [
+    {
+      "version": "4.1.3",
+      "date": "2026-09-09",
+      "changes": [
+        "Backend reliability and workflow improvements.",
+        "User interface and document workflow improvements.",
+        "Installer, update, and distribution improvements.",
+        "Regression coverage and validation updates.",
+        "Documentation and project guidance updates."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Backend reliability and workflow improvements.",
+          "User interface and document workflow improvements.",
+          "Installer, update, and distribution improvements.",
+          "Regression coverage and validation updates.",
+          "Documentation and project guidance updates."
+        ],
+        "id": [
+          "Peningkatan keandalan backend dan alur kerja.",
+          "Peningkatan antarmuka dan alur kerja dokumen.",
+          "Peningkatan installer, pembaruan, dan distribusi.",
+          "Peningkatan pengujian regresi dan validasi.",
+          "Pembaruan dokumentasi dan panduan proyek."
+        ]
+      }
+    },
+    {
+      "version": "4.1.2",
+      "date": "2026-09-09",
+      "changes": [
+        "Backend reliability and workflow improvements.",
+        "User interface and document workflow improvements.",
+        "Installer, update, and distribution improvements.",
+        "Regression coverage and validation updates.",
+        "Documentation and project guidance updates."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Backend reliability and workflow improvements.",
+          "User interface and document workflow improvements.",
+          "Installer, update, and distribution improvements.",
+          "Regression coverage and validation updates.",
+          "Documentation and project guidance updates."
+        ],
+        "id": [
+          "Peningkatan keandalan backend dan alur kerja.",
+          "Peningkatan antarmuka dan alur kerja dokumen.",
+          "Peningkatan installer, pembaruan, dan distribusi.",
+          "Peningkatan pengujian regresi dan validasi.",
+          "Pembaruan dokumentasi dan panduan proyek."
+        ]
+      }
+    },
+    {
+      "version": "4.1.1",
+      "date": "2026-09-09",
+      "changes": [
+        "Organize PDF now uses a fixed-height lazy-loading page grid with drag reorder, blank-page insertion, per-page rotate, and delete controls.",
+        "Rotate PDF now has All/Custom page modes, visual page selection, and left/right rotation buttons.",
+        "Watermark now supports staged rules, per-page checkbox selection, visual previews, common fonts, persistent custom font upload, and one final export.",
+        "Crop PDF now includes a draggable/resizable visual crop rectangle synchronized with millimeter margins.",
+        "Compression now tolerates older supported PyMuPDF save signatures in an existing virtual environment.",
+        "Added the Windows installer, incremental update flow, and startup update check."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Organize PDF now uses a fixed-height lazy-loading page grid with drag reorder, blank-page insertion, per-page rotate, and delete controls.",
+          "Rotate PDF now has All/Custom page modes, visual page selection, and left/right rotation buttons.",
+          "Watermark now supports staged rules, per-page checkbox selection, visual previews, common fonts, persistent custom font upload, and one final export.",
+          "Crop PDF now includes a draggable/resizable visual crop rectangle synchronized with millimeter margins.",
+          "Compression now tolerates older supported PyMuPDF save signatures in an existing virtual environment.",
+          "Added the Windows installer, incremental update flow, and startup update check."
+        ],
+        "id": [
+          "Atur PDF kini menggunakan kisi halaman lazy-loading dengan tinggi tetap, drag reorder, penyisipan halaman kosong, rotasi per halaman, dan kontrol hapus.",
+          "Putar PDF kini memiliki mode Semua/Khusus, pemilihan halaman visual, dan tombol rotasi kiri/kanan.",
+          "Watermark kini mendukung aturan bertahap, pilihan checkbox per halaman, preview visual, font umum, upload font khusus persisten, dan satu ekspor final.",
+          "Potong PDF kini memiliki kotak crop visual yang dapat digeser/diubah ukurannya dan tersinkron dengan margin milimeter.",
+          "Kompresi kini tetap kompatibel dengan signature PyMuPDF lama yang didukung pada virtual environment yang sudah ada.",
+          "Menambahkan installer Windows, alur update inkremental, dan pemeriksaan update saat startup."
+        ]
+      }
+    }
+  ],
+  "published_at": "2026-09-09T19:14:46.113565+00:00"
+}

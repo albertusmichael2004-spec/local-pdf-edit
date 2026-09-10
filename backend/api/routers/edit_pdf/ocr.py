@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request, dependency_unavailable
 from backend.api.workspace import RequestWorkspace
+from backend.api.workflow_input import resolve_pdf_input
 from backend.core.errors import OCRError, PDFWorkbenchError
 from backend.services.edit_pdf.ocr_pdf import ocr_pdf
 
@@ -18,13 +19,17 @@ router = APIRouter()
 
 @router.post("/ocr")
 async def api_ocr(
-    file: Annotated[UploadFile, File(...)],
+    file: Annotated[UploadFile | None, File()] = None,
     language: Annotated[str, Form()] = "eng",
     dpi: Annotated[int, Form()] = 200,
+    workflow_id: Annotated[str | None, Form()] = None,
+    artifact_id: Annotated[str | None, Form()] = None,
 ) -> FileResponse:
     workspace = RequestWorkspace()
     try:
-        input_path, filename, _ = await workspace.save_pdf(file)
+        input_path, filename, _ = await resolve_pdf_input(
+            workspace, file, workflow_id, artifact_id
+        )
         output = workspace.output(f"{Path(filename).stem}_ocr.pdf")
         count = await run_in_threadpool(ocr_pdf, input_path, output, language, min(300, max(120, dpi)))
         return workspace.download(output, "application/pdf", output.name, {"X-OCR-Pages": str(count)})

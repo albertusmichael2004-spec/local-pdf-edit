@@ -12,6 +12,7 @@ from backend.api.routers import (
     pdf_security,
     quick_tools,
     system,
+    workflows,
 )
 
 from backend.api.routers.convert_to_pdf import (
@@ -20,6 +21,7 @@ from backend.api.routers.convert_to_pdf import (
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(system.router)
+api_router.include_router(workflows.router)
 api_router.include_router(desktop_native.router)
 api_router.include_router(quick_tools.router)
 api_router.include_router(edit_pdf.router)

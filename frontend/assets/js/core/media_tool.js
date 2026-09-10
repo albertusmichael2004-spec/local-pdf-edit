@@ -27,10 +27,16 @@ function endpointFor(operation, kind) {
   return null;
 }
 
-async function inspect(files) {
+async function inspect(files, operation, status) {
   const form = new FormData();
   files.forEach((file) => form.append("files", file));
-  const response = await apiFetch("/api/media/probe", { method: "POST", body: form });
+  form.append("operation", operation);
+  const response = await apiFetch("/api/media/probe", {
+    method: "POST",
+    body: form,
+    progressElement: status,
+    progressLabel: `Inspecting ${files.length} file${files.length === 1 ? "" : "s"} locally…`,
+  });
   if (!response.ok) throw new Error(await parseError(response));
   return response.json();
 }
@@ -39,7 +45,7 @@ function fillTargets(select, targets, operation) {
   select.replaceChildren();
   if (operation === "compress") select.add(new Option("Keep original type", "keep", true, true));
   for (const target of targets) {
-    const label = `${target.format.toUpperCase()}${target.recommended ? " · Recommended" : ""}`;
+    const label = `${target.format.toUpperCase()}${target.audio_only ? " · Audio only" : ""}${target.recommended ? " · Recommended" : ""}`;
     const selected = target.recommended && operation !== "compress";
     select.add(new Option(label, target.format, selected, selected));
   }
@@ -67,7 +73,7 @@ export function initMediaTool({ operation, ids }) {
     }
     setStatus(status, `Inspecting ${files.length} file${files.length === 1 ? "" : "s"} locally…`);
     try {
-      const data = await inspect(files);
+      const data = await inspect(files, operation, status);
       if (token !== state.token) return;
       const kinds = [...new Set(data.files.map((file) => file.kind))];
       if (kinds.length !== 1) throw new Error(`Use one detected file type per batch. Found: ${kinds.join(", ")}.`);

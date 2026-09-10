@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
+from backend.api.workflow_input import resolve_pdf_input
 from backend.core.errors import PDFWorkbenchError
 from backend.services.quick_tools.merge_pdf import merge_pdfs
 from backend.services.quick_tools.split_pdf import (
@@ -55,16 +56,20 @@ async def merge(files: Annotated[list[UploadFile], File(...)]) -> FileResponse:
 
 @router.post("/split")
 async def split(
-    file: Annotated[UploadFile, File(...)],
+    file: Annotated[UploadFile | None, File()] = None,
     mode: Annotated[str, Form()] = "range",
     ranges: Annotated[str, Form()] = "1",
     every_n: Annotated[int, Form()] = 1,
     max_size_mb: Annotated[float, Form()] = 5.0,
     merge_ranges: Annotated[bool, Form()] = False,
+    workflow_id: Annotated[str | None, Form()] = None,
+    artifact_id: Annotated[str | None, Form()] = None,
 ) -> FileResponse:
     workspace = RequestWorkspace()
     try:
-        input_path, filename, _ = await workspace.save_pdf(file)
+        input_path, filename, _ = await resolve_pdf_input(
+            workspace, file, workflow_id, artifact_id
+        )
         total_pages = get_pdf_page_count(input_path)
         oversized: list[int] = []
 

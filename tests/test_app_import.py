@@ -1,4 +1,5 @@
 from backend.main import app
+from backend.core import preferences
 from fastapi.testclient import TestClient
 import multiprocessing
 import threading
@@ -45,6 +46,20 @@ def test_app_routes_are_registered():
     assert "/api/convert/images" in paths
     assert "/api/convert/ebook" in paths
     assert "/api/document-security/sha256" in paths
+    assert "/api/workspace/reset" in paths
+    assert "/api/workflows/organize/start" in paths
+    assert "/api/workflows/{workflow_id}/organize/execute" in paths
+
+
+def test_workspace_reset_cleans_orphaned_workspaces_without_error():
+    with TestClient(app) as client:
+        response = client.post("/api/workspace/reset")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "reset"
+    assert isinstance(payload["removed_workspaces"], int)
+    assert isinstance(payload["removed_workflows"], int)
 
 
 def test_health_reports_no_application_upload_cap():
@@ -54,6 +69,16 @@ def test_health_reports_no_application_upload_cap():
     assert payload["upload_limit"] is None
     assert payload["max_archive_output_mb"] is None
     assert "max_file_mb" not in payload
+
+
+def test_language_preference_survives_api_round_trip(tmp_path, monkeypatch):
+    monkeypatch.setattr(preferences, "persistent_data_root", lambda: tmp_path)
+    with TestClient(app) as client:
+        assert client.get("/api/preferences/language").json() == {"language": "en"}
+        saved = client.put("/api/preferences/language", json={"language": "id"})
+        assert saved.status_code == 200
+        assert saved.json() == {"language": "id"}
+        assert client.get("/api/preferences/language").json() == {"language": "id"}
 
 
 def test_desktop_engine_runs_outside_ui_process_and_serves_static_shell():
@@ -142,3 +167,38 @@ def test_desktop_falls_back_to_webview_when_browser_is_unavailable(monkeypatch):
     desktop._main_impl()
 
     assert calls == ["browser", "webview"]
+
+
+def test_browser_window_reapplies_launcher_icon_until_chromium_closes(tmp_path, monkeypatch):
+    profile = tmp_path / "browser-profile"
+    profile.mkdir()
+    icon_path = tmp_path / "app.ico"
+    icon_path.write_bytes(b"icon")
+    process_snapshots = iter(([101], [101], []))
+    applied = []
+    destroyed = []
+
+    monkeypatch.setattr(
+        desktop,
+        "_browser_profile_processes",
+        lambda _profile: list(next(process_snapshots)),
+    )
+    monkeypatch.setattr(desktop, "_browser_window_handles", lambda process_ids: [501])
+    monkeypatch.setattr(desktop, "_load_windows_icon", lambda path: 9001)
+    monkeypatch.setattr(
+        desktop,
+        "_set_windows_window_icon",
+        lambda hwnd, icon: applied.append((hwnd, icon)),
+    )
+    monkeypatch.setattr(desktop, "_destroy_windows_icon", destroyed.append)
+    monkeypatch.setattr(desktop.time, "sleep", lambda _seconds: None)
+
+    class BrowserProcess:
+        @staticmethod
+        def poll():
+            return None
+
+    desktop._wait_for_browser_window(BrowserProcess(), profile, icon_path)
+
+    assert applied == [(501, 9001), (501, 9001)]
+    assert destroyed == [9001]

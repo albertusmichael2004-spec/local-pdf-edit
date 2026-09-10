@@ -1,7 +1,8 @@
-import { apiFetch, downloadResponse } from "./api.js?v=4.5";
-import { $, setStatus } from "./dom.js?v=4.5";
-import { firstFile } from "./file_store.js?v=4.5";
-import { startProgressTracking } from "./progress.js?v=4.5";
+import { apiFetch, downloadResponse } from "/frontend/assets/js/core/api.js";
+import { $, setStatus } from "/frontend/assets/js/core/dom.js";
+import { firstFile } from "/frontend/assets/js/core/file_store.js";
+import { startProgressTracking } from "/frontend/assets/js/core/progress.js";
+import { appendWorkflowReference } from "/frontend/assets/js/core/workflow_transfer.js";
 
 const STREAM_DOWNLOAD_THRESHOLD = 512 * 1024 * 1024;
 
@@ -56,7 +57,7 @@ export function formWithSingleFile(inputId) {
   const file = firstFile(inputId);
   if (!file) throw new Error("Choose or drop a file first.");
   const form = new FormData();
-  form.append("file", file);
+  if (!appendWorkflowReference(form, file, inputId)) form.append("file", file);
   return form;
 }
 

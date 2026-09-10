@@ -37,6 +37,7 @@ _HASH_EXECUTOR = ThreadPoolExecutor(
     thread_name_prefix="pdf-workbench-hash",
 )
 _FINISHED_JOB_TTL_SECONDS = 60 * 60
+_APP_WINDOW_TITLE = "Local PDF Workbench"
 
 
 class _JsonModel(BaseModel):
@@ -135,28 +136,135 @@ def _windows_powershell() -> Path:
     raise RuntimeError("Windows PowerShell is required to open the file picker.")
 
 
+def _window_title(hwnd: int) -> str:
+    """Read a top-level Windows title without making ctypes a hard dependency."""
+    import ctypes
+
+    user32 = ctypes.windll.user32
+    length = int(user32.GetWindowTextLengthW(hwnd))
+    if length <= 0:
+        return ""
+    buffer = ctypes.create_unicode_buffer(length + 1)
+    user32.GetWindowTextW(hwnd, buffer, length + 1)
+    return buffer.value
+
+
+def _windows_dialog_owner() -> int | None:
+    """Find the visible PDF Workbench window to own a native picker.
+
+    The desktop shell normally is the foreground window when a picker button is
+    clicked.  Looking up the app title as a fallback also covers the small
+    delay between the browser request and the native dialog process starting,
+    without accidentally disabling an unrelated foreground application.
+    """
+    if os.name != "nt":
+        return None
+
+    try:
+        import ctypes
+
+        user32 = ctypes.windll.user32
+        foreground = int(user32.GetForegroundWindow() or 0)
+        if foreground and user32.IsWindowVisible(foreground):
+            if _window_title(foreground).strip() == _APP_WINDOW_TITLE:
+                return foreground
+
+        matches: list[int] = []
+        from ctypes import wintypes
+
+        callback_type = ctypes.WINFUNCTYPE(
+            wintypes.BOOL,
+            wintypes.HWND,
+            wintypes.LPARAM,
+        )
+
+        @callback_type
+        def collect(hwnd, _lparam):
+            handle = int(hwnd or 0)
+            if (
+                handle
+                and user32.IsWindowVisible(handle)
+                and _window_title(handle).strip() == _APP_WINDOW_TITLE
+            ):
+                matches.append(handle)
+                return False
+            return True
+
+        user32.EnumWindows(collect, 0)
+        return matches[0] if matches else None
+    except Exception:
+        # The HTTP bridge remains usable if Windows denies one of these calls
+        # (for example in a restricted test host or unusual shell session).
+        return None
+
+
+def _set_windows_window_enabled(hwnd: int, enabled: bool) -> bool:
+    """Enable/disable an app window and report its previous enabled state."""
+    import ctypes
+
+    user32 = ctypes.windll.user32
+    was_enabled = bool(user32.IsWindowEnabled(hwnd))
+    user32.EnableWindow(hwnd, bool(enabled))
+    return was_enabled
+
+
+def _activate_windows_window(hwnd: int) -> None:
+    import ctypes
+
+    ctypes.windll.user32.SetForegroundWindow(hwnd)
+
+
 def _run_windows_dialog(script: str, values: dict[str, str]) -> str | None:
-    """Run a normal-user WinForms picker without depending on Tcl/Tk."""
+    """Run an owned, modal normal-user WinForms picker without Tcl/Tk.
+
+    PowerShell runs in a separate process, so a dialog without an owner can be
+    placed behind the Chromium app.  Passing the app HWND and disabling that
+    exact window gives the picker normal Windows modal behavior: it opens in
+    front, cannot be bypassed by clicking the app, and focus is restored after
+    the picker closes.
+    """
     environment = os.environ.copy()
     environment.update(values)
-    completed = subprocess.run(
-        [
-            str(_windows_powershell()),
-            "-NoLogo",
-            "-NoProfile",
-            "-NonInteractive",
-            "-STA",
-            "-Command",
-            script,
-        ],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        env=environment,
-        check=False,
-        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-    )
+    environment.pop("LPW_DIALOG_OWNER", None)
+    owner = _windows_dialog_owner()
+    was_enabled: bool | None = None
+    if owner:
+        try:
+            # The browser is normally already foreground because the request
+            # came from a click.  This call is harmless if Windows rejects it,
+            # while the disabled owner still prevents app interaction.
+            _activate_windows_window(owner)
+            was_enabled = _set_windows_window_enabled(owner, False)
+            environment["LPW_DIALOG_OWNER"] = str(owner)
+        except Exception:
+            owner = None
+
+    try:
+        completed = subprocess.run(
+            [
+                str(_windows_powershell()),
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-STA",
+                "-Command",
+                script,
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=environment,
+            check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    finally:
+        if owner and was_enabled:
+            try:
+                _set_windows_window_enabled(owner, True)
+                _activate_windows_window(owner)
+            except Exception:
+                pass
     if completed.returncode:
         detail = completed.stderr.strip() or "The Windows file picker could not open."
         raise RuntimeError(detail)
@@ -174,9 +282,16 @@ $dialog.Filter = $env:LPW_DIALOG_FILTER
 $dialog.CheckFileExists = $true
 $dialog.Multiselect = $false
 $dialog.RestoreDirectory = $true
-if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+$owner = $null
+if ($env:LPW_DIALOG_OWNER) {
+    $owner = [System.Windows.Forms.NativeWindow]::new()
+    $owner.AssignHandle([IntPtr]::new([Int64]$env:LPW_DIALOG_OWNER))
+}
+$result = if ($owner) { $dialog.ShowDialog($owner) } else { $dialog.ShowDialog() }
+if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
     [Console]::Write($dialog.FileName)
 }
+if ($owner) { $owner.ReleaseHandle() }
 """
 
 
@@ -188,29 +303,37 @@ $dialog = [System.Windows.Forms.FolderBrowserDialog]::new()
 $dialog.Description = $env:LPW_DIALOG_TITLE
 $dialog.ShowNewFolderButton = $true
 if ($env:LPW_DIALOG_INITIAL) { $dialog.SelectedPath = $env:LPW_DIALOG_INITIAL }
-if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+$owner = $null
+if ($env:LPW_DIALOG_OWNER) {
+    $owner = [System.Windows.Forms.NativeWindow]::new()
+    $owner.AssignHandle([IntPtr]::new([Int64]$env:LPW_DIALOG_OWNER))
+}
+$result = if ($owner) { $dialog.ShowDialog($owner) } else { $dialog.ShowDialog() }
+if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
     [Console]::Write($dialog.SelectedPath)
 }
+if ($owner) { $owner.ReleaseHandle() }
 """
 
 
 def _choose_file_dialog(*, archive_only: bool = False) -> str | None:
     if os.name == "nt":
-        file_filter = (
-            "Compressed files|*.zip;*.7z;*.rar;*.tar;*.tar.gz;*.tgz;*.tar.bz2;*.tbz2;"
-            "*.tar.xz;*.txz;*.gz;*.bz2;*.xz;*.cab|All files|*.*"
-            if archive_only
-            else "All files|*.*"
-        )
-        return _run_windows_dialog(
-            _WINDOWS_FILE_DIALOG,
-            {
-                "LPW_DIALOG_TITLE": (
-                    "Choose a compressed file" if archive_only else "Choose a local file"
-                ),
-                "LPW_DIALOG_FILTER": file_filter,
-            },
-        )
+        with _DIALOG_LOCK:
+            file_filter = (
+                "Compressed files|*.zip;*.7z;*.rar;*.tar;*.tar.gz;*.tgz;*.tar.bz2;*.tbz2;"
+                "*.tar.xz;*.txz;*.gz;*.bz2;*.xz;*.cab|All files|*.*"
+                if archive_only
+                else "All files|*.*"
+            )
+            return _run_windows_dialog(
+                _WINDOWS_FILE_DIALOG,
+                {
+                    "LPW_DIALOG_TITLE": (
+                        "Choose a compressed file" if archive_only else "Choose a local file"
+                    ),
+                    "LPW_DIALOG_FILTER": file_filter,
+                },
+            )
 
     from tkinter import filedialog
 
@@ -234,13 +357,14 @@ def _choose_file_dialog(*, archive_only: bool = False) -> str | None:
 
 def _choose_folder_dialog(*, initial_folder: Path | None = None, title: str = "Choose a local folder") -> str | None:
     if os.name == "nt":
-        return _run_windows_dialog(
-            _WINDOWS_FOLDER_DIALOG,
-            {
-                "LPW_DIALOG_TITLE": title,
-                "LPW_DIALOG_INITIAL": str(initial_folder) if initial_folder else "",
-            },
-        )
+        with _DIALOG_LOCK:
+            return _run_windows_dialog(
+                _WINDOWS_FOLDER_DIALOG,
+                {
+                    "LPW_DIALOG_TITLE": title,
+                    "LPW_DIALOG_INITIAL": str(initial_folder) if initial_folder else "",
+                },
+            )
 
     from tkinter import filedialog
 

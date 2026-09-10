@@ -1,5 +1,20 @@
 const controllers = new WeakMap();
+const objectKeys = new WeakMap();
+let nextObjectKey = 1;
 const blocked = "button,input,select,textarea,a";
+
+// Keep a dragged item's identity stable when a reorder causes its list to render
+// again.  File objects are retained by file_store, so this survives the commit
+// render and lets the release animation target the item that was actually moved.
+export function stableReorderKey(value) {
+  if (!value || (typeof value !== "object" && typeof value !== "function")) return String(value ?? "");
+  let key = objectKeys.get(value);
+  if (!key) {
+    key = `object-${nextObjectKey++}`;
+    objectKeys.set(value, key);
+  }
+  return key;
+}
 function directItems(container, selector) {
   return [...container.children].filter((node) => node.matches(selector));
 }
@@ -55,7 +70,8 @@ export function bindAnimatedReorder({ container, itemSelector, key = (item) => i
     if (!pointer) return;
     const order = directItems(container, itemSelector).map(key);
     const shouldCommit = active;
-    dragged?.classList.remove("dragging", "reorder-lifted");
+    const droppedKey = shouldCommit && dragged ? key(dragged) : null;
+    dragged?.classList.remove("dragging", "reorder-pressed", "reorder-lifted");
     ghost?.remove();
     clearTargets();
     dragged = null;
@@ -65,7 +81,18 @@ export function bindAnimatedReorder({ container, itemSelector, key = (item) => i
     if (shouldCommit) {
       suppressClick = true;
       window.setTimeout(() => { suppressClick = false; }, 0);
-      onCommit(order);
+      onCommit(order, droppedKey);
+      const animateDrop = () => {
+        if (!droppedKey) return;
+        const dropped = directItems(container, itemSelector).find((item) => key(item) === droppedKey);
+        if (!dropped) return;
+        dropped.classList.remove("reorder-drop-pop");
+        void dropped.offsetWidth;
+        dropped.classList.add("reorder-drop-pop");
+        dropped.addEventListener("animationend", () => dropped.classList.remove("reorder-drop-pop"), { once: true });
+      };
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(animateDrop);
+      else animateDrop();
     }
   };
   const move = (event) => {
@@ -74,6 +101,7 @@ export function bindAnimatedReorder({ container, itemSelector, key = (item) => i
     if (!active) {
       active = true;
       ghost = dragGhost(dragged, event);
+      dragged.classList.remove("reorder-pressed");
       dragged.classList.add("dragging", "reorder-lifted");
     }
     event.preventDefault();
@@ -93,6 +121,7 @@ export function bindAnimatedReorder({ container, itemSelector, key = (item) => i
     const item = event.target.closest(itemSelector);
     if (!item || item.parentElement !== container) return;
     dragged = item;
+    dragged.classList.add("reorder-pressed");
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
     document.addEventListener("pointermove", move, { passive: false });
     document.addEventListener("pointerup", up);

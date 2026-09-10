@@ -1,7 +1,9 @@
 @echo off
 setlocal
 set "PROJECT_ROOT=%~dp0"
-set "PORTABLE=%PROJECT_ROOT%release\LocalPDFWorkbench\LocalPDFWorkbench.exe"
+set "PORTABLE_DIR=%PROJECT_ROOT%release\LocalPDFWorkbench"
+if exist "%PROJECT_ROOT%.local\portable_output_dir.txt" set /p PORTABLE_DIR=<"%PROJECT_ROOT%.local\portable_output_dir.txt"
+set "PORTABLE=%PORTABLE_DIR%\LocalPDFWorkbench.exe"
 set "PYTHON=%PROJECT_ROOT%.venv\Scripts\python.exe"
 set "PYTHONW=%PROJECT_ROOT%.venv\Scripts\pythonw.exe"
 
@@ -14,7 +16,7 @@ if exist "%PYTHON%" if exist "%PYTHONW%" (
 )
 
 if exist "%PORTABLE%" (
-  start "Local PDF Workbench" /d "%PROJECT_ROOT%release\LocalPDFWorkbench" "%PORTABLE%"
+  start "Local PDF Workbench" /d "%PORTABLE_DIR%" "%PORTABLE%"
   exit /b 0
 )
 

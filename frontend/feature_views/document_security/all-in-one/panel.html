@@ -11,24 +11,19 @@
   </div>
   <div class="dropzone" data-input="allSecurityFile">
     <input hidden id="allSecurityFile" type="file"/>
-    <div class="drop-icon">＋</div><strong>Drop any file</strong>
-    <span>For a complete folder, use the Windows folder picker below.</span>
+    <div class="drop-icon">＋</div><strong>Drop a file or ZIP</strong>
+    <span>Click this area to choose a file from your computer.</span>
   </div>
   <div class="file-meta hidden" data-filemeta-for="allSecurityFile"></div>
-  <div class="action-row native-source-row">
-    <button class="btn secondary" id="chooseAllSecurityNative" type="button">Choose local file</button>
-    <button class="btn secondary" id="chooseAllSecurityFolder" type="button">Choose local folder</button>
-    <span class="helper">The selected file or complete folder tree will be packed into one encrypted 7z.</span>
-  </div>
-  <div class="file-meta hidden" id="allSecurityNativeMeta"></div>
   <div class="two-col">
     <label class="field"><span>Password</span><input autocomplete="new-password" id="allSecurityPassword" minlength="8" type="password"/></label>
     <label class="field"><span>Confirm password</span><input autocomplete="new-password" id="allSecurityConfirm" minlength="8" type="password"/></label>
   </div>
   <p class="helper security-note">Keep this password safe. ZIP, media, PDF, and other pre-compressed files automatically use fast encryption without wasteful recompression.</p>
   <label class="checkbox-row"><input id="reduceAllSecuritySize" type="checkbox"/> Reduce file size with balanced quality before encryption</label>
-  <p class="helper">Applies moderate optimization to a selected file. Folders retain every file unchanged and are compressed as one unit.</p>
-  <label class="checkbox-row danger-check"><input id="deleteAllSecurityOriginal" type="checkbox"/> Move the original file or folder to Recycle Bin only after the encrypted archive passes validation</label>
-  <button class="btn primary" id="allSecurityBtn">Secure file or folder and create 7z</button>
+  <p class="helper">Applies moderate optimization to the selected file before encryption.</p>
+  <label class="checkbox-row danger-check"><input id="deleteAllSecurityOriginal" type="checkbox"/> Move the original uploaded file to Recycle Bin only after the encrypted archive passes validation</label>
+  <p class="helper">When enabled, the desktop app confirms the original file location, writes the encrypted 7z beside it, validates the archive, then moves the original to Recycle Bin.</p>
+  <button class="btn primary" id="allSecurityBtn">Secure file and create 7z</button>
   <div class="status hidden" id="allSecurityStatus"></div>
 </section>

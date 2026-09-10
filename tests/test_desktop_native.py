@@ -41,6 +41,50 @@ def test_windows_dialog_uses_sta_powershell_and_returns_utf8_path(monkeypatch, t
     assert captured["kwargs"]["env"]["LPW_DIALOG_TITLE"] == "Choose a local file"
 
 
+def test_windows_dialog_owns_and_restores_workbench_window(monkeypatch, tmp_path: Path):
+    powershell = tmp_path / "powershell.exe"
+    powershell.write_bytes(b"")
+    foreground_calls = []
+    enabled_calls = []
+    captured = {}
+
+    monkeypatch.setattr(desktop_native, "_windows_powershell", lambda: powershell)
+    monkeypatch.setattr(desktop_native, "_windows_dialog_owner", lambda: 4242)
+    monkeypatch.setattr(
+        desktop_native,
+        "_activate_windows_window",
+        lambda hwnd: foreground_calls.append(hwnd),
+    )
+    monkeypatch.setattr(
+        desktop_native,
+        "_set_windows_window_enabled",
+        lambda hwnd, enabled: enabled_calls.append((hwnd, enabled)) or True,
+    )
+
+    def fake_run(command, **kwargs):
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(returncode=0, stdout="C:\\Dokumen\\contoh.pdf", stderr="")
+
+    monkeypatch.setattr(desktop_native.subprocess, "run", fake_run)
+
+    selected = desktop_native._run_windows_dialog(
+        "dialog-script",
+        {"LPW_DIALOG_TITLE": "Choose a local file"},
+    )
+
+    assert selected == "C:\\Dokumen\\contoh.pdf"
+    assert captured["kwargs"]["env"]["LPW_DIALOG_OWNER"] == "4242"
+    assert foreground_calls == [4242, 4242]
+    assert enabled_calls == [(4242, False), (4242, True)]
+
+
+def test_windows_dialog_scripts_pass_native_owner_to_winforms():
+    assert "LPW_DIALOG_OWNER" in desktop_native._WINDOWS_FILE_DIALOG
+    assert "LPW_DIALOG_OWNER" in desktop_native._WINDOWS_FOLDER_DIALOG
+    assert "ShowDialog($owner)" in desktop_native._WINDOWS_FILE_DIALOG
+    assert "ShowDialog($owner)" in desktop_native._WINDOWS_FOLDER_DIALOG
+
+
 def test_http_file_and_folder_pickers_return_real_path_metadata(tmp_path: Path, monkeypatch):
     source = tmp_path / "document.bin"
     source.write_bytes(b"desktop bridge")

@@ -1,6 +1,6 @@
 import { getFiles, onFilesChanged, replaceFiles } from "./file_store.js";
-import { localImageUrl } from "./previews.js";
-import { bindAnimatedReorder } from "./drag_reorder.js";
+import { localImageUrl } from "./previews.js?v=7.5";
+import { bindAnimatedReorder, stableReorderKey } from "/frontend/assets/js/core/drag_reorder.js";
 
 function createButton(label, title, className = "page-card-action") {
   const button = document.createElement("button");
@@ -22,7 +22,8 @@ export class ImageWorkspace {
       itemSelector: ".page-editor-card",
       onCommit: (order) => {
         const files = getFiles(this.inputId);
-        replaceFiles(this.inputId, order.map((value) => files[Number(value)]).filter(Boolean));
+        const byKey = new Map(files.map((file) => [stableReorderKey(file), file]));
+        replaceFiles(this.inputId, order.map((value) => byKey.get(value)).filter(Boolean));
       },
     });
     onFilesChanged(inputId, () => this.render());
@@ -40,7 +41,7 @@ export class ImageWorkspace {
   _card(file, index) {
     const card = document.createElement("div");
     card.className = "page-editor-card";
-    card.dataset.reorderKey = String(index);
+    card.dataset.reorderKey = stableReorderKey(file);
     const page = document.createElement("div");
     page.className = "page-editor-page";
     page.draggable = false;

@@ -1,16 +1,16 @@
 # Portable Windows Build
 
-This folder contains the portable build tooling and the generated `release\LocalPDFWorkbench` deliverable.
+This folder contains the portable build tooling. After PyInstaller reports a
+successful build, the script asks where to copy the generated deliverable.
 
 ## Goal
 
 Create an `onedir` portable application:
 
 ```text
-release/
-└── LocalPDFWorkbench/
-    ├── LocalPDFWorkbench.exe
-    └── _internal/...
+<selected-output-folder>/
+├── LocalPDFWorkbench.exe
+└── _internal/...
 ```
 
 Copy/share the **whole `LocalPDFWorkbench` folder**. The destination PC does not need VS Code or a Python installation.
@@ -35,8 +35,13 @@ The build reuses the project's existing `.venv`.
 3. Share:
 
 ```text
-release\LocalPDFWorkbench\
+<selected-output-folder>/
 ```
+
+Choose option 1 for an external folder (saved destination or Windows folder
+picker), or option 2 for `release\LocalPDFWorkbench\` under the project. The
+selected output is saved in `.local\portable_output_dir.txt`; `.local\` is
+ignored by Git.
 
 Do **not** share only the `.exe`; this is intentionally an onedir build for reliability and easier troubleshooting.
 

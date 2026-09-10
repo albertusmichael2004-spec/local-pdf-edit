@@ -1,5 +1,6 @@
-import { inspectPdf, previewPdf } from "./previews.js";
-import { bindAnimatedReorder } from "./drag_reorder.js";
+import { inspectPdf, previewPdf } from "/frontend/assets/js/core/previews.js?v=7.5";
+import { openPdfPreview } from "/frontend/assets/js/core/pdf_preview_modal.js?v=7.5";
+import { bindAnimatedReorder } from "/frontend/assets/js/core/drag_reorder.js";
 
 let sequence = 0;
 
@@ -81,21 +82,56 @@ export class PageWorkspace {
     }
   }
 
-  async load(file) {
+  async load(file, { pageIds = [], pageSources = [], animate = false } = {}) {
+    const previousLayout = animate && this.container
+      ? new Map([...this.container.querySelectorAll(".page-editor-card")].map((card) => [
+        card.dataset.itemId,
+        card.getBoundingClientRect(),
+      ]))
+      : null;
+    const previousById = animate ? new Map(this.items.map((item) => [item.id, item])) : new Map();
     this.file = file;
     this.info = await inspectPdf(file);
     this.items = Array.from({ length: this.info.pages }, (_, index) => ({
-      id: uid("source"),
+      id: pageIds[index] || uid("source"),
       sourcePage: index + 1,
-      rotation: 0,
-      widthPt: null,
-      heightPt: null,
-      selected: false,
+      sourcePageId: pageIds[index] || null,
+      sourceArtifactId: pageSources[index]?.source_artifact_id || null,
+      sourceFileName: pageSources[index]?.file_name || null,
+      sourceFilePage: pageSources[index]?.source_page || null,
+      sourceColor: pageSources[index]?.color || null,
+      rotation: previousById.get(pageIds[index])?.rotation || 0,
+      widthPt: previousById.get(pageIds[index])?.widthPt || null,
+      heightPt: previousById.get(pageIds[index])?.heightPt || null,
+      selected: previousById.get(pageIds[index])?.selected || false,
       blank: false,
     }));
     this.previewCache.clear();
     this.render();
+    if (previousLayout?.size) this._animateLayout(previousLayout);
     return this.info;
+  }
+
+  _animateLayout(previousLayout) {
+    const animate = () => {
+      this.container.querySelectorAll(".page-editor-card").forEach((card) => {
+        const first = previousLayout.get(card.dataset.itemId);
+        if (!first) return;
+        const last = card.getBoundingClientRect();
+        const x = first.left - last.left;
+        const y = first.top - last.top;
+        if (!x && !y) return;
+        card.animate([
+          { transform: `translate(${x}px, ${y}px)` },
+          { transform: "translate(0, 0)" },
+        ], {
+          duration: 460,
+          easing: "cubic-bezier(.2,.75,.25,1)",
+        });
+      });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(animate);
+    else animate();
   }
 
   clear() {
@@ -123,6 +159,10 @@ export class PageWorkspace {
     card.dataset.itemId = item.id;
     card.dataset.reorderKey = item.id;
     if (item.sourcePage) card.dataset.sourcePage = String(item.sourcePage);
+    if (item.sourceColor && !item.blank) {
+      card.classList.add("has-source-color");
+      card.style.setProperty("--page-source-color", item.sourceColor);
+    }
 
     if (this.organizeActions) {
       const left = document.createElement("button");
@@ -201,15 +241,46 @@ export class PageWorkspace {
       pageShell.appendChild(actions);
     }
 
+    let cardClickTimer = 0;
     if (this.onCardClick) {
-      pageShell.addEventListener("click", (event) => this.onCardClick(item, this, event));
+      pageShell.addEventListener("click", (event) => {
+        if (event.detail > 1) return;
+        window.clearTimeout(cardClickTimer);
+        cardClickTimer = window.setTimeout(() => this.onCardClick(item, this, event), 220);
+      });
     } else if (this.selectable) {
-      pageShell.addEventListener("click", () => this.setSelected(item.id, !item.selected));
+      pageShell.addEventListener("click", (event) => {
+        if (event.detail > 1) return;
+        this.setSelected(item.id, !item.selected);
+      });
     }
+
+    pageShell.addEventListener("dblclick", (event) => {
+      window.clearTimeout(cardClickTimer);
+      if (item.blank || event.target.closest("button, input")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openPdfPreview(this.file, {
+        pageNumber: item.sourcePage,
+        title: this.file?.name || "PDF document",
+        singlePage: true,
+      });
+    });
 
     const label = document.createElement("div");
     label.className = "page-editor-label";
-    label.textContent = item.blank ? "Blank page" : `Page ${item.sourcePage}`;
+    const pageNumber = document.createElement("span");
+    pageNumber.textContent = item.blank ? "Blank page" : `Page ${item.sourcePage}`;
+    label.appendChild(pageNumber);
+    if (!item.blank && item.sourceFileName) {
+      const origin = document.createElement("span");
+      origin.className = "page-editor-origin";
+      origin.title = `${item.sourceFileName}${item.sourceFilePage ? ` · source page ${item.sourceFilePage}` : ""}`;
+      origin.textContent = item.sourceFilePage
+        ? `${item.sourceFileName} · p.${item.sourceFilePage}`
+        : item.sourceFileName;
+      label.appendChild(origin);
+    }
     pageShell.appendChild(label);
     card.appendChild(pageShell);
 
@@ -233,6 +304,11 @@ export class PageWorkspace {
     const blank = {
       id: uid("blank"),
       sourcePage: null,
+      sourcePageId: null,
+      sourceArtifactId: null,
+      sourceFileName: null,
+      sourceFilePage: null,
+      sourceColor: null,
       rotation: 0,
       widthPt: neighbor?.widthPt || 595,
       heightPt: neighbor?.heightPt || 842,
@@ -274,7 +350,9 @@ export class PageWorkspace {
 
   getPlan() {
     return this.items.map((item) => ({
+      page_id: item.id,
       source_page: item.sourcePage,
+      source_page_id: item.sourcePageId,
       rotation: item.rotation || 0,
       width_pt: item.widthPt || 595,
       height_pt: item.heightPt || 842,
@@ -288,6 +366,11 @@ export class PageWorkspace {
       return {
         id: uid("source"),
         sourcePage: pageNumber,
+        sourcePageId: source?.sourcePageId || source?.id || null,
+        sourceArtifactId: source?.sourceArtifactId || null,
+        sourceFileName: source?.sourceFileName || null,
+        sourceFilePage: source?.sourceFilePage || null,
+        sourceColor: source?.sourceColor || null,
         rotation: 0,
         widthPt: source?.widthPt || null,
         heightPt: source?.heightPt || null,

@@ -10,6 +10,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
+from backend.api.workflow_input import resolve_pdf_input
 from backend.core.errors import PDFWorkbenchError
 from backend.services.edit_pdf.crop_pdf import crop_pages, crop_pages_with_plan
 from backend.services.edit_pdf.rotate_pdf import rotate_pages, rotate_pages_with_plan
@@ -56,17 +57,21 @@ async def api_rotate(
 
 @router.post("/crop")
 async def api_crop(
-    file: Annotated[UploadFile, File(...)],
+    file: Annotated[UploadFile | None, File()] = None,
     left_mm: Annotated[float, Form()] = 0,
     top_mm: Annotated[float, Form()] = 0,
     right_mm: Annotated[float, Form()] = 0,
     bottom_mm: Annotated[float, Form()] = 0,
     pages: Annotated[str, Form()] = "all",
     crop_plan_json: Annotated[str | None, Form()] = None,
+    workflow_id: Annotated[str | None, Form()] = None,
+    artifact_id: Annotated[str | None, Form()] = None,
 ) -> FileResponse:
     workspace = RequestWorkspace()
     try:
-        input_path, filename, _ = await workspace.save_pdf(file)
+        input_path, filename, _ = await resolve_pdf_input(
+            workspace, file, workflow_id, artifact_id
+        )
         total = get_pdf_page_count(input_path)
         indexes = all_or_selection(pages, total)
         output = workspace.output(f"{Path(filename).stem}_cropped.pdf")

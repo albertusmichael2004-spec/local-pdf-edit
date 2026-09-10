@@ -27,12 +27,15 @@ def render_page_preview(path: Path, page_number: int, max_width: int = 440) -> P
                 raise PreviewError(f"Page {page_number} is outside 1-{doc.page_count}.")
             page = doc[page_number - 1]
             rect = page.rect
-            scale = min(2.0, max(0.45, max_width / max(1.0, rect.width)))
+            scale = min(6.0, max(0.45, max_width / max(1.0, rect.width)))
             pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
-            payload = base64.b64encode(pix.tobytes("jpeg", jpg_quality=76)).decode("ascii")
+            high_definition = max_width >= 1200
+            image_type = "png" if high_definition else "jpeg"
+            image_bytes = pix.tobytes(image_type, jpg_quality=82) if image_type == "jpeg" else pix.tobytes("png")
+            payload = base64.b64encode(image_bytes).decode("ascii")
             return PagePreview(
                 page=page_number,
-                image=f"data:image/jpeg;base64,{payload}",
+                image=f"data:image/{image_type};base64,{payload}",
                 width_pt=float(rect.width),
                 height_pt=float(rect.height),
                 rotation=int(page.rotation or 0),

@@ -7,6 +7,7 @@ export const FEATURES = {
   "remove-pages": { title: "Remove pages", view: "/frontend/feature_views/edit_pdf/remove-pages/panel.html", controller: "/frontend/feature_views/edit_pdf/remove-pages/controller.js" },
   "extract-pages": { title: "Extract pages", view: "/frontend/feature_views/edit_pdf/extract-pages/panel.html", controller: "/frontend/feature_views/edit_pdf/extract-pages/controller.js" },
   organize: { title: "Organize PDF", view: "/frontend/feature_views/edit_pdf/organize-pdf/panel.html", controller: "/frontend/feature_views/edit_pdf/organize-pdf/controller.js" },
+  redact: { title: "Redact PDF", view: "/frontend/feature_views/edit_pdf/redact-pdf/panel.html", controller: "/frontend/feature_views/edit_pdf/redact-pdf/controller.js" },
   compress: { title: "Compress PDF", view: "/frontend/feature_views/edit_pdf/compress-pdf/panel.html", controller: "/frontend/feature_views/edit_pdf/compress-pdf/controller.js" },
   ocr: { title: "OCR PDF", view: "/frontend/feature_views/edit_pdf/ocr-pdf/panel.html", controller: "/frontend/feature_views/edit_pdf/ocr-pdf/controller.js" },
   rotate: { title: "Rotate PDF", view: "/frontend/feature_views/edit_pdf/rotate-pdf/panel.html", controller: "/frontend/feature_views/edit_pdf/rotate-pdf/controller.js" },

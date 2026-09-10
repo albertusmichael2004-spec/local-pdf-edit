@@ -1,55 +1,66 @@
-import { $, escapeHtml, formatBytes, setStatus } from "/frontend/assets/js/core/dom.js?v=4.5";
-import { clearFiles, firstFile, onFilesChanged } from "/frontend/assets/js/core/file_store.js?v=4.5";
+import { $, setStatus } from "/frontend/assets/js/core/dom.js?v=4.5";
+import { firstFile, onFilesChanged } from "/frontend/assets/js/core/file_store.js?v=4.5";
 import { formWithSingleFile, postDownload } from "/frontend/assets/js/core/downloads.js?v=4.5";
 import { getNativeApi } from "/frontend/assets/js/core/native_api.js?v=6.0";
 
+function filePathHint(file) {
+  if (!file) return "";
+  for (const key of ["pywebviewFullPath", "path", "fullPath"]) {
+    const candidate = file[key];
+    if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+  }
+  return "";
+}
+
+function sameUpload(source, file) {
+  return Boolean(
+    source
+      && source.kind === "file"
+      && String(source.name || "").toLowerCase() === String(file.name || "").toLowerCase()
+      && Number(source.bytes) === Number(file.size),
+  );
+}
+
 export function init() {
   let nativeSource = null;
-  const nativeMeta = $("#allSecurityNativeMeta");
   const status = $("#allSecurityStatus");
 
   onFilesChanged("allSecurityFile", (files) => {
-    if (!files.length) return;
     nativeSource = null;
-    nativeMeta.classList.add("hidden");
-    nativeMeta.textContent = "";
-  });
-
-  $("#chooseAllSecurityNative").addEventListener("click", async () => {
-    try {
-      const api = getNativeApi();
-      if (!api) throw new Error("Native file selection is available in the desktop app.");
-      const result = await api.choose_security_file();
-      if (!result) return;
-      clearFiles("allSecurityFile");
-      nativeSource = { ...result, kind: "file" };
-      nativeMeta.classList.remove("hidden");
-      nativeMeta.innerHTML = `<strong>${escapeHtml(result.name)}</strong> • ${formatBytes(result.bytes)}<br><code>${escapeHtml(result.path)}</code>`;
-      setStatus(status, "Local source selected.", "success");
-    } catch (error) {
-      setStatus(status, error.message || String(error), "error");
-    }
-  });
-
-  $("#chooseAllSecurityFolder").addEventListener("click", async () => {
-    try {
-      const api = getNativeApi();
-      if (!api?.choose_security_folder) throw new Error("Native folder selection is available in the desktop app.");
-      const result = await api.choose_security_folder();
-      if (!result) return;
-      clearFiles("allSecurityFile");
-      nativeSource = { ...result, kind: "folder" };
-      nativeMeta.classList.remove("hidden");
-      nativeMeta.innerHTML = `<strong>${escapeHtml(result.name)}</strong> • Complete folder<br><code>${escapeHtml(result.path)}</code>`;
-      setStatus(status, "Local folder selected. Its complete structure will be encrypted.", "success");
-    } catch (error) {
-      setStatus(status, error.message || String(error), "error");
+    const hintedPath = filePathHint(files[0]);
+    if (hintedPath) {
+      nativeSource = {
+        path: hintedPath,
+        name: files[0].name,
+        bytes: files[0].size,
+        kind: "file",
+      };
     }
   });
 
   document.querySelector('.dropzone[data-input="allSecurityFile"]')?.addEventListener("directorydrop", () => {
-    setStatus(status, "Use “Choose local folder” so the desktop app can read the complete folder path.", "error");
+    setStatus(status, "Upload a ZIP file when you need to protect a complete folder.", "error");
   });
+
+  async function resolveNativeSource(file) {
+    // Browser uploads intentionally do not expose an absolute source path.
+    // The desktop bridge is only needed when the user explicitly enables the
+    // destructive Recycle Bin option.
+    if (sameUpload(nativeSource, file)) return nativeSource;
+    const api = getNativeApi();
+    if (!api?.choose_security_file) {
+      throw new Error("Moving the original requires the desktop app's local file access.");
+    }
+    setStatus(status, "Confirm the original file in the desktop file dialog…");
+    const result = await api.choose_security_file();
+    if (!result) throw new Error("No original file was selected; the original was not changed.");
+    const source = { ...result, kind: "file" };
+    if (!sameUpload(source, file)) {
+      throw new Error("The selected original does not match the uploaded file name and size. Nothing was changed.");
+    }
+    nativeSource = source;
+    return source;
+  }
 
   $("#allSecurityBtn").addEventListener("click", async () => {
     try {
@@ -59,22 +70,20 @@ export function init() {
       const deleteOriginal = $("#deleteAllSecurityOriginal").checked;
       const reduceSize = $("#reduceAllSecuritySize").checked;
 
-      if (nativeSource) {
+      const file = firstFile("allSecurityFile");
+      if (!file) throw new Error("Choose or drop a file first.");
+
+      if (deleteOriginal) {
+        const source = await resolveNativeSource(file);
         const api = getNativeApi();
-        if (!api) throw new Error("Native encryption requires the desktop app.");
-        setStatus(status, nativeSource.kind === "folder"
-          ? "Compressing and encrypting the complete folder locally…"
-          : "Creating and validating the encrypted archive locally…");
-        const result = await api.secure_all_in_one(nativeSource.path, password, deleteOriginal, reduceSize);
+        if (!api?.secure_all_in_one) throw new Error("Moving the original requires the desktop app's local file access.");
+        setStatus(status, "Creating and validating the encrypted archive beside the original…");
+        const result = await api.secure_all_in_one(source.path, password, true, reduceSize);
         const removed = result.original_trashed ? " Original moved to Recycle Bin." : "";
         setStatus(status, `Done. Encrypted archive:\n${result.path}.${removed}\n${result.note || ""}`, "success");
         return;
       }
 
-      if (!firstFile("allSecurityFile")) throw new Error("Choose or drop a file first.");
-      if (deleteOriginal) {
-        throw new Error("To remove the original safely, use the local file or folder picker first.");
-      }
       const form = formWithSingleFile("allSecurityFile");
       form.append("password", password);
       form.append("reduce_size", reduceSize ? "true" : "false");

@@ -32,9 +32,7 @@ AUDIO_BITRATE = {
 def build_ffmpeg_command(executable: str, source: Path, output: Path, probe: MediaProbeResult, options: JobOptions) -> list[str]:
     target = options.target_format
     command = [executable, "-nostdin", "-y", "-i", str(source)]
-    if probe.kind == "video":
-        if target not in VIDEO_CODECS:
-            raise MediaProcessingError(f"Unsupported video target: {target}.")
+    if probe.kind == "video" and target in VIDEO_CODECS:
         video, audio = VIDEO_CODECS[target]
         command += ["-map", "0:v:0", "-map", "0:a?", "-c:v", video, "-c:a", audio]
         command += ["-crf", VIDEO_CRF.get(options.quality, "24")] if video.startswith("libx") else []
@@ -42,12 +40,13 @@ def build_ffmpeg_command(executable: str, source: Path, output: Path, probe: Med
             command += ["-vf", "scale=-2:720"]
         if target in {"mp4", "mov", "m4a"}:
             command += ["-movflags", "+faststart"]
-    else:
-        if target not in AUDIO_CODECS:
-            raise MediaProcessingError(f"Unsupported audio target: {target}.")
-        command += ["-vn", "-c:a", AUDIO_CODECS[target]]
+    elif target in AUDIO_CODECS:
+        command += ["-vn", "-map", "0:a:0", "-c:a", AUDIO_CODECS[target]]
         if target not in {"wav", "flac", "aiff"}:
             command += ["-b:a", AUDIO_BITRATE.get(options.quality, "192k")]
+    else:
+        kind = "video or audio" if probe.kind == "video" else "audio"
+        raise MediaProcessingError(f"Unsupported {kind} target: {target}.")
     if not options.keep_metadata:
         command += ["-map_metadata", "-1"]
     return command + [str(output)]

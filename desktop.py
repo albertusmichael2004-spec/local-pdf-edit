@@ -24,7 +24,7 @@ if sys.stderr is None:
 APP_TITLE = "Local PDF Workbench"
 APP_ID = "LocalPDFWorkbench.Desktop"
 APP_GATEWAY_PORT = 17842
-STARTUP_CACHE_VERSION = "6.0"
+STARTUP_CACHE_VERSION = "7.9"
 _ELEVATION_MARKER = "LOCAL_PDF_WORKBENCH_ELEVATED"
 SPLASH_HTML = """<!doctype html>
 <html lang="en">
@@ -980,19 +980,123 @@ def _browser_profile_processes(profile: Path) -> list[int]:
     return matches
 
 
-def _wait_for_browser_window(process: subprocess.Popen, profile: Path) -> None:
-    """Keep the local engine alive for the lifetime of the Chromium app window."""
+def _browser_window_handles(process_ids: list[int]) -> list[int]:
+    """Return visible top-level windows owned by the dedicated Chromium profile."""
+    if os.name != "nt" or not process_ids:
+        return []
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.windll.user32
+        wanted = set(process_ids)
+        handles: list[int] = []
+        callback_type = ctypes.WINFUNCTYPE(
+            wintypes.BOOL,
+            wintypes.HWND,
+            wintypes.LPARAM,
+        )
+
+        @callback_type
+        def collect(hwnd, _lparam):
+            process_id = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(process_id))
+            if (
+                int(process_id.value) in wanted
+                and user32.IsWindowVisible(hwnd)
+                and not user32.GetWindow(hwnd, 4)  # GW_OWNER
+            ):
+                handles.append(int(hwnd))
+            return True
+
+        user32.EnumWindows(collect, 0)
+        return handles
+    except Exception:
+        return []
+
+
+def _load_windows_icon(icon_path: Path) -> int | None:
+    """Load the same high-quality ICO used by the desktop launcher."""
+    if os.name != "nt" or not icon_path.is_file():
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.windll.user32
+        user32.LoadImageW.restype = wintypes.HANDLE
+        handle = user32.LoadImageW(
+            None,
+            str(icon_path),
+            1,  # IMAGE_ICON
+            256,
+            256,
+            0x0010,  # LR_LOADFROMFILE
+        )
+        return int(handle) if handle else None
+    except Exception:
+        return None
+
+
+def _set_windows_window_icon(hwnd: int, icon_handle: int) -> None:
+    """Override Chromium's favicon-derived window icon with the launcher ICO."""
+    import ctypes
+
+    user32 = ctypes.windll.user32
+    result = ctypes.c_size_t()
+    for icon_kind in (1, 0, 2):  # ICON_BIG, ICON_SMALL, ICON_SMALL2
+        user32.SendMessageTimeoutW(
+            hwnd,
+            0x0080,  # WM_SETICON
+            icon_kind,
+            icon_handle,
+            0x0002,  # SMTO_ABORTIFHUNG
+            1000,
+            ctypes.byref(result),
+        )
+
+
+def _destroy_windows_icon(icon_handle: int | None) -> None:
+    if os.name != "nt" or not icon_handle:
+        return
+    try:
+        import ctypes
+
+        ctypes.windll.user32.DestroyIcon(icon_handle)
+    except Exception:
+        pass
+
+
+def _wait_for_browser_window(
+    process: subprocess.Popen,
+    profile: Path,
+    icon_path: Path | None = None,
+) -> None:
+    """Keep the engine alive and enforce the launcher icon on Chromium windows."""
     observed = False
     discovery_deadline = time.monotonic() + 20.0
-    while True:
-        matches = _browser_profile_processes(profile)
-        if matches:
-            observed = True
-        elif observed:
-            return
-        elif process.poll() is not None and time.monotonic() >= discovery_deadline:
-            raise RuntimeError("The desktop browser window closed before it became ready.")
-        time.sleep(0.35)
+    icon_handle = _load_windows_icon(icon_path) if icon_path is not None else None
+    try:
+        while True:
+            matches = _browser_profile_processes(profile)
+            if matches:
+                observed = True
+                if icon_handle:
+                    for hwnd in _browser_window_handles(matches):
+                        try:
+                            # Chromium can reapply the page favicon after load.
+                            # Reasserting the launcher icon on each lifecycle poll
+                            # keeps source and installed builds consistent.
+                            _set_windows_window_icon(hwnd, icon_handle)
+                        except Exception:
+                            pass
+            elif observed:
+                return
+            elif process.poll() is not None and time.monotonic() >= discovery_deadline:
+                raise RuntimeError("The desktop browser window closed before it became ready.")
+            time.sleep(0.35)
+    finally:
+        _destroy_windows_icon(icon_handle)
 
 
 def _browser_main_impl() -> None:
@@ -1024,7 +1128,7 @@ def _browser_main_impl() -> None:
             "--disable-component-update",
             "--window-size=1420,900",
         ])
-        _wait_for_browser_window(browser_process, profile)
+        _wait_for_browser_window(browser_process, profile, _app_icon())
     finally:
         if process.is_alive():
             process.terminate()

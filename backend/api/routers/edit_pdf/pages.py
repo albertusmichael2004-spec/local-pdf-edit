@@ -10,6 +10,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
+from backend.api.workflow_input import resolve_pdf_input
 from backend.core.errors import PDFWorkbenchError
 from backend.services.edit_pdf.extract_pages import extract_pages
 from backend.services.edit_pdf.organize_pdf import organize_pages, organize_with_plan
@@ -47,12 +48,16 @@ async def api_remove_pages(
 
 @router.post("/extract-pages")
 async def api_extract_pages(
-    file: Annotated[UploadFile, File(...)],
     pages: Annotated[str, Form()],
+    file: Annotated[UploadFile | None, File()] = None,
+    workflow_id: Annotated[str | None, Form()] = None,
+    artifact_id: Annotated[str | None, Form()] = None,
 ) -> FileResponse:
     workspace = RequestWorkspace()
     try:
-        input_path, filename, _ = await workspace.save_pdf(file)
+        input_path, filename, _ = await resolve_pdf_input(
+            workspace, file, workflow_id, artifact_id
+        )
         selected = parse_page_selection(pages, get_pdf_page_count(input_path))
         output = workspace.output(f"{Path(filename).stem}_extracted.pdf")
         count = await run_in_threadpool(extract_pages, input_path, output, [page - 1 for page in selected])

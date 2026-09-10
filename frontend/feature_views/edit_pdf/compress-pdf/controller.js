@@ -1,7 +1,7 @@
 import { $, $$, escapeHtml, formatBytes, setStatus } from "/frontend/assets/js/core/dom.js";
 import { firstFile, onFilesChanged } from "/frontend/assets/js/core/file_store.js";
 import { formWithSingleFile, postDownload } from "/frontend/assets/js/core/downloads.js";
-import { inspectPdf } from "/frontend/assets/js/core/previews.js";
+import { inspectPdf } from "/frontend/assets/js/core/previews.js?v=7.5";
 
 export function init() {
   $$("input[name='compressionMode']").forEach((radio) => {

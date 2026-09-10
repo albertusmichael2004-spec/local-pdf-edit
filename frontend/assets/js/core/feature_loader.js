@@ -1,14 +1,69 @@
-import { apiFetch } from "./api.js";
-import { $, $$ } from "./dom.js?v=4.5";
+import { apiFetch } from "/frontend/assets/js/core/api.js";
+import { $, $$ } from "/frontend/assets/js/core/dom.js";
 import {
   bindDropzones,
   initializeSingleFileControls,
-} from "./dropzones.js?v=4.5";
-import { FEATURES } from "./features.js?v=6.0";
+} from "/frontend/assets/js/core/dropzones.js";
+import { FEATURES } from "./features.js?v=7.5";
+import { clearPendingWorkflowTransfer, hydratePendingWorkflowTransfer } from "/frontend/assets/js/core/workflow_transfer.js";
+import { resetAllFiles } from "/frontend/assets/js/core/file_store.js";
+import { t, translateTree } from "/frontend/assets/js/core/i18n.js";
 
 const featureResources = new Map();
-const assetVersion = new URLSearchParams(window.location.search).get("asset_version") || "6.0";
+const assetVersion = new URLSearchParams(window.location.search).get("asset_version") || "7.9";
 let navigationGeneration = 0;
+
+function bindCreateAnotherButton(panel, featureId) {
+  if (panel.querySelector(".task-reset-button")) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "btn secondary task-reset-button";
+  button.dataset.i18n = "createAnother";
+  button.dataset.i18nFallback = "Create another one";
+  button.dataset.i18nTitle = "createAnotherTitle";
+  button.dataset.i18nTitleFallback = "Clear this task and start again";
+  button.textContent = t("createAnother", "Create another one");
+  button.title = t("createAnotherTitle", "Clear this task and start again");
+
+  const primaryButtons = [...panel.querySelectorAll(".btn.primary")];
+  const primary = primaryButtons.at(-1);
+  const primaryIsHidden = primary?.closest(".hidden");
+  let row = primaryIsHidden ? null : primary?.closest(".action-row");
+  if (!row && primary?.parentElement && !primaryIsHidden) {
+    row = document.createElement("div");
+    row.className = "action-row task-action-row";
+    primary.parentElement.insertBefore(row, primary);
+    row.appendChild(primary);
+  }
+  if (!row) {
+    row = document.createElement("div");
+    row.className = "action-row task-action-row";
+    panel.appendChild(row);
+  }
+  row.classList.add("task-action-row");
+  row.appendChild(button);
+
+  button.addEventListener("click", async () => {
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = t("resetting", "Resetting…");
+    try {
+      const response = await apiFetch("/api/workspace/reset", { method: "POST" });
+      if (!response.ok) throw new Error(t("resetEngineError", "The local engine could not reset the task."));
+      resetAllFiles();
+      clearPendingWorkflowTransfer();
+      await showFeature(featureId);
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = t("createAnother", "Create another one");
+      button.title = t("createAnotherTitle", "Clear this task and start again");
+      const status = panel.querySelector(".status") || panel.appendChild(document.createElement("div"));
+      status.className = "status error";
+      status.textContent = error?.message || t("resetError", "Could not reset this task.");
+    }
+  });
+}
 
 function versionedUrl(path) {
   const url = new URL(path, window.location.origin);
@@ -124,6 +179,18 @@ async function loadFeature(featureId, generation) {
     );
   }
 
+  try {
+    await hydratePendingWorkflowTransfer(featureId, panel);
+  } catch (error) {
+    const notice = document.createElement("div");
+    notice.className = "status error workflow-transfer-error";
+    notice.textContent = error?.message || "The temporary workflow PDF could not be loaded.";
+    panel.prepend(notice);
+  }
+
+  translateTree(panel);
+  bindCreateAnotherButton(panel, featureId);
+
   return panel;
 }
 
@@ -133,13 +200,13 @@ function renderFeatureFailure(featureId, error) {
   const panel = document.createElement("section");
   panel.className = "tool-panel active feature-load-failure";
   const heading = document.createElement("h2");
-  heading.textContent = `${FEATURES[featureId]?.title || featureId} could not open`;
+  heading.textContent = `${t(`feature.${featureId}`, FEATURES[featureId]?.title || featureId)} ${t("featureLoadFailed", "could not open")}`;
   const detail = document.createElement("p");
   detail.textContent = error?.message || String(error);
   const retry = document.createElement("button");
   retry.type = "button";
   retry.className = "btn primary";
-  retry.textContent = "Retry feature";
+  retry.textContent = t("retryFeature", "Retry feature");
   retry.addEventListener("click", () => showFeature(featureId));
   panel.append(heading, detail, retry);
   host.replaceChildren(panel);
@@ -184,7 +251,7 @@ export async function showFeature(
 
   if (title) {
     title.textContent =
-      FEATURES[featureId]?.title
+      t(`feature.${featureId}`, FEATURES[featureId]?.title)
       || featureId;
   }
 
@@ -246,3 +313,10 @@ export function bindNavigation() {
     }
   );
 }
+
+document.addEventListener("pdf-workbench:locale-change", () => {
+  translateTree(document);
+  const active = document.querySelector(".nav-tool.active")?.dataset.tool;
+  const title = document.querySelector("#toolTitle");
+  if (title && active) title.textContent = t(`feature.${active}`, FEATURES[active]?.title || active);
+});

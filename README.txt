@@ -17,7 +17,8 @@ A. Live-source desktop mode
 
 B. Portable Windows application mode
    - Built with PyInstaller using distribution/windows/build_portable.ps1.
-   - Produces release/LocalPDFWorkbench/.
+   - After PyInstaller reports completion, asks whether the output belongs
+     outside the checkout or under release/ in the checkout.
    - The whole output folder can be copied to another Windows computer.
    - The receiving computer does not need VS Code or Python.
 
@@ -93,6 +94,7 @@ B. EDIT PDF
    - Remove Pages
    - Extract Pages
    - Organize PDF
+   - Redact PDF
    - Compress PDF
    - OCR PDF
    - Rotate PDF
@@ -473,13 +475,14 @@ distribution/windows/ contains Windows portable-build files.
 Important files:
 - LocalPDFWorkbench.spec: PyInstaller configuration.
 - build_portable.ps1: builds the Windows onedir application.
-- build_or_update.py: rebuilds the portable app and refreshes release/LocalPDFWorkbench/.
+- build_or_update.py: builds the portable app and starts the interactive
+  output-folder selection.
 - Build Portable App.bat: convenient launcher for the build script.
 - requirements-build.txt: build-only Python dependency list.
 - README_PORTABLE.md: portable-build notes.
 
 Build result:
-release/LocalPDFWorkbench/
+<selected-output-folder>/
 |-- LocalPDFWorkbench.exe
 |-- _internal/
 
@@ -615,7 +618,8 @@ From the project folder:
 
 The launcher first validates the source .venv and opens a dedicated Chromium
 app window with normal user permissions. If the source runtime is unavailable,
-it automatically falls back to release/LocalPDFWorkbench/LocalPDFWorkbench.exe.
+it automatically falls back to the last portable output selected during a
+build (or release/LocalPDFWorkbench/ when no selection is saved).
 This avoids WebView2 data-directory failures and .NET message-pump hangs that
 could make pythonw.exe unresponsive. The local API and native file operations
 remain on 127.0.0.1; documents are not uploaded to the internet.
@@ -663,7 +667,12 @@ Build:
 
 Output:
 
-    release\LocalPDFWorkbench\
+    <selected-output-folder>\
+
+After PyInstaller reports completion, choose option 1 for an external folder
+or option 2 for release/LocalPDFWorkbench/ under the project. Option 1 then
+offers the saved folder or a Windows folder picker. The selected destination
+is stored in .local/portable_output_dir.txt, which is ignored by Git.
 
 The portable build contains the Python runtime and Python packages, but Ghostscript and Tesseract remain separate external engines unless a future distribution strategy explicitly bundles them.
 
@@ -716,7 +725,7 @@ Source project:
 - Start Local PDF Workbench.cmd validates the source runtime first and falls back to the portable EXE.
 - The Desktop shortcut targets the system cmd.exe and invokes that launcher safely.
 
-release/LocalPDFWorkbench/:
+<selected-output-folder>/:
 - Generated portable application.
 - Used for sharing with another Windows user/computer.
 - Does not update automatically when source code changes.

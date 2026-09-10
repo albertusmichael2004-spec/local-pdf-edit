@@ -1,6 +1,6 @@
-import { $, setStatus } from "./dom.js";
-import { onFilesChanged } from "./file_store.js";
-import { PageWorkspace, parsePageOrderExpression } from "./page_workspace.js";
+import { $, setStatus } from "/frontend/assets/js/core/dom.js";
+import { onFilesChanged } from "/frontend/assets/js/core/file_store.js";
+import { PageWorkspace, parsePageOrderExpression } from "./page_workspace.js?v=7.5";
 
 function formatPageRanges(pages) {
   if (!pages.length) return "";

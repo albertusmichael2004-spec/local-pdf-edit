@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from backend.core.errors import MediaProcessingError
+from backend.core.progress import report_fraction
 from .capabilities import targets_for
 from .models import BatchResult, JobOptions, MediaProbeResult, MediaSource
 from .output_manager import OutputManager
@@ -19,7 +20,14 @@ class MediaJobFacade:
     def probe(self, sources: list[MediaSource]) -> list[tuple[MediaSource, MediaProbeResult]]:
         if not sources:
             raise MediaProcessingError("Upload at least one file.")
-        return [(source, probe_media(source.path)) for source in sources]
+        results = []
+        total = len(sources)
+        for index, source in enumerate(sources):
+            report_fraction("Inspecting media metadata", index, total, 5, 92)
+            result = probe_media(source.path)
+            results.append((source, result))
+            report_fraction("Inspecting media metadata", index + 1, total, 5, 92)
+        return results
 
     def process(
         self,
@@ -36,7 +44,13 @@ class MediaJobFacade:
         jobs = []
         for source, probe in probed:
             normalized = self.planner.normalize(source.path, probe, options)
-            supported = {item["format"] for item in targets_for(probe)}
+            supported = {
+                item["format"]
+                for item in targets_for(
+                    probe,
+                    allow_audio_from_video=options.operation == "converted",
+                )
+            }
             if normalized.target_format not in supported:
                 raise MediaProcessingError(f"{normalized.target_format.upper()} is not available for {source.display_name} on this computer.")
             path = output.path_for(source.display_name, normalized.target_format, options.operation)

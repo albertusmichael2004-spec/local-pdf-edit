@@ -12,6 +12,7 @@ import fitz
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
+from backend.api.workflow_input import resolve_pdf_input
 from backend.core.errors import PDFWorkbenchError
 from backend.core.paths import custom_font_dir
 from backend.services.edit_pdf.add_watermark import WatermarkRule, add_text_watermarks
@@ -31,6 +32,18 @@ router = APIRouter()
 @router.get("/watermark/fonts")
 def list_watermark_fonts() -> JSONResponse:
     return JSONResponse({"builtin": builtin_fonts(), "custom": custom_fonts()})
+
+
+@router.get("/watermark/font/{filename}")
+def get_custom_watermark_font(filename: str) -> FileResponse:
+    safe_name = Path(filename).name
+    if safe_name != filename or Path(safe_name).suffix.lower() not in {".ttf", ".otf"}:
+        raise bad_request(ValueError("The requested custom font is invalid."))
+    font_path = custom_font_dir() / safe_name
+    if not font_path.is_file():
+        raise bad_request(ValueError("The requested custom font is unavailable."))
+    media_type = "font/ttf" if font_path.suffix.lower() == ".ttf" else "font/otf"
+    return FileResponse(font_path, media_type=media_type)
 
 
 @router.post("/watermark/font")
@@ -76,12 +89,16 @@ def _rule_from_payload(payload: dict, total_pages: int) -> WatermarkRule:
 
 @router.post("/watermark")
 async def api_watermark(
-    file: Annotated[UploadFile, File(...)],
+    file: Annotated[UploadFile | None, File()] = None,
     rules_json: Annotated[str, Form()] = "[]",
+    workflow_id: Annotated[str | None, Form()] = None,
+    artifact_id: Annotated[str | None, Form()] = None,
 ) -> FileResponse:
     workspace = RequestWorkspace()
     try:
-        input_path, filename, _ = await workspace.save_pdf(file)
+        input_path, filename, _ = await resolve_pdf_input(
+            workspace, file, workflow_id, artifact_id
+        )
         total_pages = get_pdf_page_count(input_path)
         try:
             payload = json.loads(rules_json)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -23,7 +23,10 @@ def capabilities() -> JSONResponse:
 
 
 @router.post("/media/probe")
-async def probe(files: Annotated[list[UploadFile], File(...)]) -> JSONResponse:
+async def probe(
+    files: Annotated[list[UploadFile], File(...)],
+    operation: Annotated[str, Form()] = "convert",
+) -> JSONResponse:
     workspace = RequestWorkspace()
     try:
         sources = await save_sources(workspace, files)
@@ -31,7 +34,8 @@ async def probe(files: Annotated[list[UploadFile], File(...)]) -> JSONResponse:
         return JSONResponse({"files": [{
             "name": source.display_name, "kind": item.kind, "format": item.format,
             "mime_type": item.mime_type, "bytes": item.bytes, "details": item.details,
-            "warnings": list(item.warnings), "targets": targets_for(item),
+            "warnings": list(item.warnings),
+            "targets": targets_for(item, allow_audio_from_video=operation == "convert"),
         } for source, item in results], "capabilities": capability_payload()})
     except MediaProcessingError as exc:
         if "required" in str(exc).lower():

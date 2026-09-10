@@ -2,12 +2,43 @@ import { apiFetch, parseError } from "/frontend/assets/js/core/api.js";
 import { $, escapeHtml, setStatus } from "/frontend/assets/js/core/dom.js";
 import { firstFile, onFilesChanged } from "/frontend/assets/js/core/file_store.js";
 import { formWithSingleFile, postDownload } from "/frontend/assets/js/core/downloads.js";
-import { PageWorkspace } from "/frontend/assets/js/core/page_workspace.js";
-import { previewPdf } from "/frontend/assets/js/core/previews.js";
+import { PageWorkspace } from "/frontend/assets/js/core/page_workspace.js?v=7.5";
+import { previewPdf } from "/frontend/assets/js/core/previews.js?v=7.5";
 
 function fontCss(fontKey, select) {
   const option = [...select.options].find((item) => item.value === fontKey);
-  return option?.textContent || "Arial";
+  return option?.dataset.fontFamily || option?.textContent?.replace(/\s+\(custom\)$/, "") || "Arial";
+}
+
+function fontStack(label) {
+  const safeLabel = String(label || "Arial").replace(/"/g, "");
+  return `"${safeLabel}", Arial, sans-serif`;
+}
+
+function styleFontOption(option, label) {
+  if (!option) return;
+  option.dataset.fontFamily = label;
+  option.style.fontFamily = fontStack(label);
+}
+
+function applySelectedFontStyle(select) {
+  const option = select?.selectedOptions?.[0];
+  if (option) select.style.fontFamily = fontStack(option.dataset.fontFamily || option.textContent);
+}
+
+async function loadCustomFontFace(font) {
+  if (!font?.key?.startsWith("custom:")) return;
+  const filename = font.key.slice("custom:".length);
+  try {
+    const face = new FontFace(
+      font.label,
+      `url("/api/edit/watermark/font/${encodeURIComponent(filename)}?v=7.3")`,
+    );
+    await face.load();
+    document.fonts.add(face);
+  } catch {
+    // The backend still embeds the font during export; only the browser preview is affected.
+  }
 }
 
 function overlayElement(rule, fontSelect) {
@@ -27,6 +58,9 @@ export async function init() {
   const rules = [];
   let sampleImage = "";
 
+  [...fontSelect.options].forEach((option) => styleFontOption(option, option.textContent));
+  applySelectedFontStyle(fontSelect);
+
   const workspace = new PageWorkspace({
     inputId: "watermarkFile",
     container: "#watermarkPageWorkspace",
@@ -42,13 +76,20 @@ export async function init() {
       const response = await apiFetch("/api/edit/watermark/fonts");
       if (!response.ok) return;
       const data = await response.json();
+      for (const font of data.builtin || []) {
+        const option = [...fontSelect.options].find((candidate) => candidate.value === font.key);
+        styleFontOption(option, font.label);
+      }
       for (const font of data.custom || []) {
         if ([...fontSelect.options].some((option) => option.value === font.key)) continue;
         const option = document.createElement("option");
         option.value = font.key;
         option.textContent = `${font.label} (custom)`;
+        styleFontOption(option, font.label);
         fontSelect.appendChild(option);
+        await loadCustomFontFace(font);
       }
+      applySelectedFontStyle(fontSelect);
     } catch {
       // Built-in font options remain usable.
     }
@@ -117,6 +158,11 @@ export async function init() {
     }
   });
 
+  fontSelect.addEventListener("change", () => {
+    applySelectedFontStyle(fontSelect);
+    renderAllOverlays();
+  });
+
   $("#watermarkPageMode").addEventListener("change", async () => {
     const custom = $("#watermarkPageMode").value === "custom";
     $("#watermarkAllSample").classList.toggle("hidden", custom);
@@ -171,8 +217,12 @@ export async function init() {
       const option = document.createElement("option");
       option.value = data.key;
       option.textContent = `${data.label} (custom)`;
+      styleFontOption(option, data.label);
       fontSelect.appendChild(option);
       fontSelect.value = data.key;
+      await loadCustomFontFace(data);
+      applySelectedFontStyle(fontSelect);
+      renderAllOverlays();
       $("#watermarkFontFile").value = "";
       setStatus(status, "Custom font saved in the local data/fonts folder.", "success");
     } catch (error) {

@@ -14,6 +14,52 @@ from .models import MediaProbeResult
 
 
 MIME_BY_KIND = {"image": "image/*", "audio": "audio/*", "video": "video/*", "ebook": "application/epub+zip", "pdf": "application/pdf"}
+MIME_BY_AV_FORMAT = {
+    "mp4": "video/mp4",
+    "m4v": "video/x-m4v",
+    "mov": "video/quicktime",
+    "3gp": "video/3gpp",
+    "3g2": "video/3gpp2",
+    "webm": "video/webm",
+    "m4a": "audio/mp4",
+}
+
+
+def _canonical_av_format(path: Path, format_name: object, tags: object = None) -> str:
+    """Resolve ffprobe's comma-separated demuxer family to the actual container."""
+    formats = [item.strip().casefold() for item in str(format_name or "").split(",") if item.strip()]
+    if not formats:
+        return path.suffix.lstrip(".").casefold() or "unknown"
+
+    available = set(formats)
+    suffix = path.suffix.lstrip(".").casefold()
+    tag_map = tags if isinstance(tags, dict) else {}
+    brand = str(tag_map.get("major_brand", "")).strip().casefold()
+
+    if available.intersection({"mov", "mp4", "m4a", "3gp", "3g2", "mj2"}):
+        if brand.startswith("qt"):
+            return "mov"
+        if brand.startswith("3g2"):
+            return "3g2"
+        if brand.startswith("3gp"):
+            return "3gp"
+        if brand in {"m4a", "m4b", "m4p"}:
+            return "m4a"
+        if brand in {"m4v", "m4vh", "m4vp"}:
+            return "m4v"
+        if brand in {"isom", "iso2", "iso3", "iso4", "iso5", "iso6", "mp41", "mp42", "avc1", "dash", "msnv"}:
+            return "mp4"
+        if suffix in {"mov", "mp4", "m4a", "m4v", "3gp", "3g2", "mj2"}:
+            return suffix
+        return "mp4"
+
+    if available == {"matroska", "webm"} and suffix in {"mkv", "webm"}:
+        return suffix
+    return formats[0]
+
+
+def _av_mime(kind: str, container: str) -> str:
+    return MIME_BY_AV_FORMAT.get(container, MIME_BY_KIND[kind])
 
 
 def _head(path: Path, size: int = 4096) -> bytes:
@@ -82,14 +128,19 @@ def _probe_with_ffmpeg(path: Path, executable: str) -> MediaProbeResult:
         "duration": _duration_seconds(duration_match.group(1).strip()) if duration_match else None,
         "codecs": codecs,
         "streams": len(stream_lines),
+        "has_audio": bool(audio_lines),
         "probe_engine": "ffmpeg",
     }
     if dimensions:
         details.update(width=int(dimensions.group(1)), height=int(dimensions.group(2)))
+    container = _canonical_av_format(
+        path,
+        input_match.group(1).strip() if input_match else path.suffix.lstrip(".").lower(),
+    )
     return MediaProbeResult(
         kind,
-        input_match.group(1).strip().split(",")[0] if input_match else path.suffix.lstrip(".").lower(),
-        MIME_BY_KIND[kind],
+        container,
+        _av_mime(kind, container),
         path.stat().st_size,
         details,
     )
@@ -111,17 +162,23 @@ def _probe_av(path: Path) -> MediaProbeResult:
     payload = json.loads(result.stdout or "{}")
     streams = payload.get("streams", [])
     kind = "video" if any(item.get("codec_type") == "video" for item in streams) else "audio"
-    container = str(payload.get("format", {}).get("format_name", "unknown")).split(",")[0]
+    format_payload = payload.get("format", {})
+    container = _canonical_av_format(
+        path,
+        format_payload.get("format_name", "unknown"),
+        format_payload.get("tags"),
+    )
     video_stream = next((item for item in streams if item.get("codec_type") == "video"), {})
     details = {
         "duration": payload.get("format", {}).get("duration"),
         "codecs": [item.get("codec_name") for item in streams],
         "streams": len(streams),
+        "has_audio": any(item.get("codec_type") == "audio" for item in streams),
         "width": video_stream.get("width"),
         "height": video_stream.get("height"),
         "probe_engine": "ffprobe",
     }
-    return MediaProbeResult(kind, container, MIME_BY_KIND[kind], path.stat().st_size, details)
+    return MediaProbeResult(kind, container, _av_mime(kind, container), path.stat().st_size, details)
 
 
 def probe_media(path: Path) -> MediaProbeResult:

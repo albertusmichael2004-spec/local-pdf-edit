@@ -1,6 +1,6 @@
-import { $ } from "./dom.js";
-import { clearFiles, firstFile, onFilesChanged, setFiles, updateFileMeta } from "./file_store.js";
-import { localImageUrl, pdfFirstPageImage, previewKind } from "./previews.js";
+import { $ } from "/frontend/assets/js/core/dom.js";
+import { clearFiles, firstFile, onFilesChanged, setFiles, updateFileMeta } from "/frontend/assets/js/core/file_store.js";
+import { localImageUrl, pdfFirstPageImage, previewKind } from "/frontend/assets/js/core/previews.js?v=7.5";
 
 let globalDropGuardBound = false;
 

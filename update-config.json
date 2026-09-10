@@ -1,0 +1,16 @@
+{
+  "manifest_url": "https://raw.githubusercontent.com/albertusmichael2004-spec/local-pdf-edit/main/update-feed/latest.json",
+  "installer_url": "https://1drv.ms/u/c/d9725a3220ae6d84/IQBkyOtXpNEnTbSeq_7PgoFtAV8RaT1TbY5T-9krC_VVhDg",
+  "release_notes": {
+    "en": [
+      "Fixed startup update checks that were silently disabled by an empty embedded manifest URL.",
+      "Preserved bilingual release-note arrays when packaging the Windows application.",
+      "Added release preflight checks plus installer SHA-256 and size metadata."
+    ],
+    "id": [
+      "Memperbaiki pemeriksaan update saat startup yang sebelumnya diam-diam nonaktif karena URL manifest kosong.",
+      "Mempertahankan array catatan rilis dwibahasa saat aplikasi Windows dikemas.",
+      "Menambahkan pemeriksaan pra-rilis serta metadata SHA-256 dan ukuran installer."
+    ]
+  }
+}

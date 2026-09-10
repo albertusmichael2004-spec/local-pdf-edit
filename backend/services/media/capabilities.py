@@ -28,10 +28,19 @@ def installed_tools() -> dict[str, bool]:
     }
 
 
-def targets_for(probe: MediaProbeResult) -> list[dict[str, object]]:
+def targets_for(probe: MediaProbeResult, *, allow_audio_from_video: bool = False) -> list[dict[str, object]]:
     tools = installed_tools()
     if probe.kind == "video" and tools["ffmpeg"]:
-        return _rank(ffmpeg_targets("video"), "mp4")
+        targets = list(ffmpeg_targets("video"))
+        audio_targets: tuple[str, ...] = ()
+        if allow_audio_from_video and probe.details.get("has_audio", True):
+            audio_targets = ffmpeg_targets("audio")
+            targets.extend(audio_targets)
+        ranked = _rank(targets, "mp4")
+        for item in ranked:
+            if item["format"] in audio_targets:
+                item["audio_only"] = True
+        return ranked
     if probe.kind == "audio" and tools["ffmpeg"]:
         return _rank(ffmpeg_targets("audio"), "mp3")
     if probe.kind == "image":

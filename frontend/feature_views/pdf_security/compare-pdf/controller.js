@@ -2,6 +2,14 @@ import { apiFetch, parseError } from "/frontend/assets/js/core/api.js";
 import { $, escapeHtml, setStatus } from "/frontend/assets/js/core/dom.js";
 import { postDownload } from "/frontend/assets/js/core/downloads.js";
 import { firstFile } from "/frontend/assets/js/core/file_store.js";
+import { appendWorkflowReference } from "/frontend/assets/js/core/workflow_transfer.js";
+
+function comparisonForm(left, right) {
+  const form = new FormData();
+  if (!appendWorkflowReference(form, left, "compareLeft", { prefix: "left_" })) form.append("left", left);
+  if (!appendWorkflowReference(form, right, "compareRight", { prefix: "right_" })) form.append("right", right);
+  return form;
+}
 
 function renderCompareResults(data) {
   const container = $("#compareResults");
@@ -47,9 +55,7 @@ export function init() {
       const left = firstFile("compareLeft");
       const right = firstFile("compareRight");
       if (!left || !right) throw new Error("Choose both PDFs first.");
-      const form = new FormData();
-      form.append("left", left);
-      form.append("right", right);
+      const form = comparisonForm(left, right);
       setStatus(status, "Comparing SHA-256, pages, exact words, exact characters and rendered pixels locally…");
       const response = await apiFetch("/api/security/compare-pdf-summary", { method: "POST", body: form });
       if (!response.ok) throw new Error(await parseError(response));
@@ -74,9 +80,7 @@ export function init() {
       const left = firstFile("compareLeft");
       const right = firstFile("compareRight");
       if (!left || !right) throw new Error("Choose both PDFs first.");
-      const form = new FormData();
-      form.append("left", left);
-      form.append("right", right);
+      const form = comparisonForm(left, right);
       await postDownload(
         "/api/security/compare-pdf",
         form,

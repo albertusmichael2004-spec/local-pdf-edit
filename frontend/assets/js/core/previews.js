@@ -1,4 +1,5 @@
-import { apiFetch, parseError } from "./api.js";
+import { apiFetch, parseError } from "/frontend/assets/js/core/api.js";
+import { appendWorkflowReference } from "/frontend/assets/js/core/workflow_transfer.js";
 
 const previewCache = new Map();
 const imageObjectUrls = new WeakMap();
@@ -14,16 +15,17 @@ export function localImageUrl(file) {
 
 export async function inspectPdf(file) {
   const form = new FormData();
-  form.append("file", file);
+  if (!appendWorkflowReference(form, file)) form.append("file", file);
   const response = await apiFetch("/api/pdf/info", { method: "POST", body: form });
   if (!response.ok) throw new Error(await parseError(response));
   return response.json();
 }
 
-export async function previewPdf(file, pages) {
+export async function previewPdf(file, pages, { maxWidth = 440 } = {}) {
   const form = new FormData();
-  form.append("file", file);
+  if (!appendWorkflowReference(form, file)) form.append("file", file);
   form.append("pages", pages.join(","));
+  form.append("max_width", String(maxWidth));
   const response = await apiFetch("/api/pdf/previews", { method: "POST", body: form });
   if (!response.ok) throw new Error(await parseError(response));
   return response.json();

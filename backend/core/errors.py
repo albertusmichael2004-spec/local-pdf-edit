@@ -43,3 +43,7 @@ class DocumentSecurityError(PDFWorkbenchError):
 
 class PreviewError(PDFWorkbenchError):
     pass
+
+
+class WorkflowError(PDFWorkbenchError):
+    """Raised when a temporary integrated-workflow artifact is unavailable or invalid."""

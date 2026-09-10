@@ -1,5 +1,52 @@
 # Changelog
 
+## [4.1.3] - 2026-09-09
+
+### en
+- Backend reliability and workflow improvements.
+- User interface and document workflow improvements.
+- Installer, update, and distribution improvements.
+- Regression coverage and validation updates.
+- Documentation and project guidance updates.
+
+### id
+- Peningkatan keandalan backend dan alur kerja.
+- Peningkatan antarmuka dan alur kerja dokumen.
+- Peningkatan installer, pembaruan, dan distribusi.
+- Peningkatan pengujian regresi dan validasi.
+- Pembaruan dokumentasi dan panduan proyek.
+## [4.1.2] - 2026-09-09
+
+### en
+- Backend reliability and workflow improvements.
+- User interface and document workflow improvements.
+- Installer, update, and distribution improvements.
+- Regression coverage and validation updates.
+- Documentation and project guidance updates.
+
+### id
+- Peningkatan keandalan backend dan alur kerja.
+- Peningkatan antarmuka dan alur kerja dokumen.
+- Peningkatan installer, pembaruan, dan distribusi.
+- Peningkatan pengujian regresi dan validasi.
+- Pembaruan dokumentasi dan panduan proyek.
+## [4.1.1] - 2026-09-09
+### en
+- Organize PDF now uses a fixed-height lazy-loading page grid with drag reorder, blank-page insertion, per-page rotate, and delete controls.
+- Rotate PDF now has All/Custom page modes, visual page selection, and left/right rotation buttons.
+- Watermark now supports staged rules, per-page checkbox selection, visual previews, common fonts, persistent custom font upload, and one final export.
+- Crop PDF now includes a draggable/resizable visual crop rectangle synchronized with millimeter margins.
+- Compression now tolerates older supported PyMuPDF save signatures in an existing virtual environment.
+- Added the Windows installer, incremental update flow, and startup update check.
+
+### id
+- Atur PDF kini menggunakan kisi halaman lazy-loading dengan tinggi tetap, drag reorder, penyisipan halaman kosong, rotasi per halaman, dan kontrol hapus.
+- Putar PDF kini memiliki mode Semua/Khusus, pemilihan halaman visual, dan tombol rotasi kiri/kanan.
+- Watermark kini mendukung aturan bertahap, pilihan checkbox per halaman, preview visual, font umum, upload font khusus persisten, dan satu ekspor final.
+- Potong PDF kini memiliki kotak crop visual yang dapat digeser/diubah ukurannya dan tersinkron dengan margin milimeter.
+- Kompresi kini tetap kompatibel dengan signature PyMuPDF lama yang didukung pada virtual environment yang sudah ada.
+- Menambahkan installer Windows, alur update inkremental, dan pemeriksaan update saat startup.
+
 ## v4.1
 
 - Added scrollable lazy-loaded page workspace for Organize PDF.

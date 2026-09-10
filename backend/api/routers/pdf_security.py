@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend.api.http_errors import bad_request
 from backend.api.workspace import RequestWorkspace
+from backend.api.workflow_input import resolve_pdf_input
 from backend.core.errors import PDFWorkbenchError
 from backend.services.pdf_security.compare_pdf import compare_pdfs_detailed, compare_pdfs_to_zip
 from backend.services.pdf_security.protect_pdf import protect_pdf
@@ -107,13 +108,26 @@ async def api_sha256_compare(
 
 @router.post("/compare-pdf-summary")
 async def api_compare_pdf_summary(
-    left: Annotated[UploadFile, File(...)],
-    right: Annotated[UploadFile, File(...)],
+    left: Annotated[UploadFile | None, File()] = None,
+    right: Annotated[UploadFile | None, File()] = None,
+    left_workflow_id: Annotated[str | None, Form()] = None,
+    left_artifact_id: Annotated[str | None, Form()] = None,
+    right_workflow_id: Annotated[str | None, Form()] = None,
+    right_artifact_id: Annotated[str | None, Form()] = None,
 ) -> JSONResponse:
     workspace = RequestWorkspace()
     try:
-        left_path, left_name, _ = await workspace.save_pdf(left, "left.pdf")
-        right_path, right_name, _ = await workspace.save_pdf(right, "right.pdf", prefix="right_")
+        left_path, left_name, _ = await resolve_pdf_input(
+            workspace, left, left_workflow_id, left_artifact_id, fallback="left.pdf"
+        )
+        right_path, right_name, _ = await resolve_pdf_input(
+            workspace,
+            right,
+            right_workflow_id,
+            right_artifact_id,
+            fallback="right.pdf",
+            prefix="right_",
+        )
         summary, _ = await run_in_threadpool(
             compare_pdfs_detailed, left_path, right_path, include_diff_payloads=False
         )
@@ -128,13 +142,26 @@ async def api_compare_pdf_summary(
 
 @router.post("/compare-pdf")
 async def api_compare_pdf(
-    left: Annotated[UploadFile, File(...)],
-    right: Annotated[UploadFile, File(...)],
+    left: Annotated[UploadFile | None, File()] = None,
+    right: Annotated[UploadFile | None, File()] = None,
+    left_workflow_id: Annotated[str | None, Form()] = None,
+    left_artifact_id: Annotated[str | None, Form()] = None,
+    right_workflow_id: Annotated[str | None, Form()] = None,
+    right_artifact_id: Annotated[str | None, Form()] = None,
 ) -> FileResponse:
     workspace = RequestWorkspace()
     try:
-        left_path, _, _ = await workspace.save_pdf(left, "left.pdf")
-        right_path, _, _ = await workspace.save_pdf(right, "right.pdf", prefix="right_")
+        left_path, _, _ = await resolve_pdf_input(
+            workspace, left, left_workflow_id, left_artifact_id, fallback="left.pdf"
+        )
+        right_path, _, _ = await resolve_pdf_input(
+            workspace,
+            right,
+            right_workflow_id,
+            right_artifact_id,
+            fallback="right.pdf",
+            prefix="right_",
+        )
         output = workspace.output("pdf_comparison_report.zip")
         summary = await run_in_threadpool(compare_pdfs_to_zip, left_path, right_path, output)
         headers = {

@@ -58,6 +58,11 @@ class ProgressRegistry:
         for key in expired:
             self._items.pop(key, None)
 
+    def clear(self) -> None:
+        """Forget progress entries when the user starts a new task."""
+        with self._lock:
+            self._items.clear()
+
 
 registry = ProgressRegistry()
 _current_job: ContextVar[str | None] = ContextVar("pdf_workbench_progress", default=None)

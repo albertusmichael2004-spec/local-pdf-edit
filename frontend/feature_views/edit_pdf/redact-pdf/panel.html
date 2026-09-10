@@ -1,0 +1,163 @@
+<section class="tool-panel redact-tool-panel" data-title="Redact PDF" id="redact">
+  <div class="panel-intro">
+    <span class="feature-kicker">INTEGRATED WORKFLOW</span>
+    <h2>Redact PDF</h2>
+    <p>Permanently remove sensitive text, image pixels, and vector content. The visible fill is applied only after the underlying PDF content is removed.</p>
+  </div>
+
+  <div class="dropzone" data-append="true" data-input="redactFile">
+    <input accept="application/pdf,.pdf" hidden id="redactFile" multiple type="file"/>
+    <div class="drop-icon">＋</div><strong>Drop one or more PDFs</strong><span>Multiple PDFs are merged automatically in the PDF order shown below.</span>
+  </div>
+  <div class="file-meta hidden" data-filemeta-for="redactFile"></div>
+
+  <section class="workflow-source-manager hidden" id="redactSourceManager">
+    <div class="workflow-source-heading">
+      <div><strong>PDF arrangement</strong><span>Drag to choose which PDF comes first. Add or remove source PDFs at any time before redacting.</span></div>
+      <button class="btn secondary small" id="clearRedactFiles" type="button">Remove all</button>
+    </div>
+    <div class="sortable-list workflow-source-list" id="redactSourceList"></div>
+  </section>
+
+  <div class="workflow-local-note hidden" id="redactWorkflowNote">
+    <span class="workflow-local-dot"></span>
+    <div><strong>Local temporary workflow</strong><span id="redactWorkflowExpiry">Automatically cleared after inactivity.</span></div>
+  </div>
+
+  <details class="redact-page-prep hidden" id="redactPagePrep">
+    <summary><span><strong>Page arrangement</strong><small>Optional - reorder, rotate, remove, or insert blank pages before marking.</small></span><span class="redact-optional-badge">Optional</span></summary>
+    <div class="redact-page-prep-body">
+      <div class="page-workspace-header"><div><strong>Prepare pages</strong><span>Drag to reorder. Double-click a page to preview it; hover to insert, rotate, or remove.</span></div><div class="redact-page-preview-actions"><span id="redactPageCount"></span><button class="btn secondary small" id="previewRedactPages" type="button">Preview PDF</button></div></div>
+      <div class="workflow-source-legend hidden" id="redactSourceLegend" aria-label="PDF source colors"></div>
+      <div class="page-workspace scrollable-page-box redact-page-box" id="redactPageWorkspace"></div>
+      <div class="redact-prep-warning hidden" id="redactPrepWarning">Page changes are staged. Confirm them before drawing final redaction marks.</div>
+      <div class="action-row">
+        <button class="btn secondary" id="resetRedactPages" type="button">Reset page changes</button>
+        <button class="btn primary" disabled id="confirmRedactPages" type="button">Confirm page arrangement</button>
+      </div>
+    </div>
+  </details>
+
+  <section class="redact-editor hidden" id="redactEditor">
+    <div class="redact-editor-toolbar">
+      <div class="redact-tool-group" aria-label="Redaction tools">
+        <button class="redact-tool" data-redact-tool="pan" type="button">Pan</button>
+        <button class="redact-tool active" data-redact-tool="redact" type="button">Redact area</button>
+        <button class="redact-tool" data-redact-tool="text" type="button">Redact by text</button>
+      </div>
+      <div class="redact-tool-group">
+        <button class="redact-tool" disabled id="redactUndo" type="button">Undo</button>
+        <button class="redact-tool" disabled id="redactRedo" type="button">Redo</button>
+        <button class="redact-tool" disabled id="redactClearMarks" type="button">Clear marks</button>
+      </div>
+      <div class="redact-zoom-controls">
+        <button aria-label="Zoom out" id="redactZoomOut" type="button">−</button>
+        <span id="redactZoomLabel">100%</span>
+        <button aria-label="Zoom in" id="redactZoomIn" type="button">＋</button>
+      </div>
+    </div>
+
+    <div class="redact-editor-grid">
+      <aside class="redact-thumbnail-rail" aria-label="PDF pages">
+        <div class="redact-rail-title"><strong>Pages</strong><span id="redactThumbCount"></span></div>
+        <div class="redact-thumbnails" id="redactThumbnails"></div>
+      </aside>
+
+      <div class="redact-canvas-column">
+        <div class="redact-page-heading"><strong id="redactActivePageLabel">Page 1</strong><span id="redactPageInstruction">Drag a box over every area that must be permanently removed.</span></div>
+        <div class="redact-canvas-stage" id="redactCanvasStage">
+          <div class="redact-paper" id="redactPaper">
+            <img alt="Active PDF page" id="redactCanvasImage"/>
+            <div class="redact-overlay drawing-enabled" id="redactOverlay"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="redact-action-rail">
+        <div class="redact-action-title"><strong>Redact PDF</strong><span>Marks stay editable until Apply Redaction.</span></div>
+        <div class="redact-text-panel" id="redactTextPanel">
+          <label class="field"><span>Search text</span><input id="redactSearchText" placeholder="Name, ID, salary, address…" type="search"/></label>
+          <label class="redact-exact-toggle" for="redactSearchExact"><input checked id="redactSearchExact" type="checkbox"/><span><strong>Exact match</strong><small>Match “ID”, but not “dividend” or “identifier”.</small></span></label>
+          <button class="btn secondary full" id="redactSearchBtn" type="button">Find and mark all</button>
+          <p class="helper">Search uses the current PDF text layer. For scans, enable OCR in the integrated workflow.</p>
+        </div>
+
+        <div class="redact-mark-heading"><strong>Marked for redaction</strong><span id="redactMarkCount">0</span></div>
+        <div class="redact-mark-list" id="redactMarkList"><p>No marks yet.</p></div>
+
+        <label class="field"><span>Redaction appearance</span><select id="redactAppearance"><option value="black">Black fill</option><option value="white">White fill</option><option value="blur">Secure blur</option><option value="pixelate">Secure pixelate</option></select></label>
+        <label class="field" id="redactColorField"><span>Fill color</span><input id="redactColor" type="color" value="#000000"/></label>
+        <div class="redact-security-warning"><strong>Permanent removal</strong><span>Redaction cannot be undone after export. Review every page before sharing.</span></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="workflow-builder hidden" id="redactWorkflowBuilder">
+    <div class="workflow-builder-heading">
+      <div><strong>Integrated workflow</strong><span>Optional actions run in a safe order around secure redaction.</span></div>
+      <span class="workflow-stage-badge">Safe order</span>
+    </div>
+
+    <div class="workflow-addon" data-addon="ocr">
+      <div class="workflow-addon-header">
+        <div aria-controls="redactOcrBody" aria-expanded="false" class="workflow-addon-toggle" role="button" tabindex="0">
+          <input aria-label="Enable OCR" id="redactOcrEnabled" type="checkbox"/>
+          <span><strong>OCR scanned pages</strong><small>Creates a searchable layer before secure redaction.</small></span><span class="workflow-order-index">1</span>
+        </div>
+      </div>
+      <div class="workflow-addon-body hidden" id="redactOcrBody"><div class="two-col"><label class="field"><span>Tesseract language code</span><input id="redactOcrLanguage" value="eng"/></label><label class="field"><span>Render DPI</span><input id="redactOcrDpi" max="300" min="120" type="number" value="200"/></label></div></div>
+    </div>
+
+    <div class="workflow-addon" data-addon="compress">
+      <div class="workflow-addon-header">
+        <div aria-controls="redactCompressBody" aria-expanded="false" class="workflow-addon-toggle" role="button" tabindex="0">
+          <input aria-label="Enable compression" id="redactCompressEnabled" type="checkbox"/>
+          <span><strong>Compress after redact</strong><small>Keeps the sanitized artifact if compression fails.</small></span><span class="workflow-order-index">2</span>
+        </div>
+      </div>
+      <div class="workflow-addon-body hidden" id="redactCompressBody">
+        <div class="profile-grid workflow-compress-profiles" id="redactCompressionProfiles">
+          <label class="profile danger"><input name="redactCompressionMode" type="radio" value="extreme"/><span class="profile-title">Extreme compression</span><span>Smallest practical output with a readable image floor.</span></label>
+          <label class="profile selected"><input checked name="redactCompressionMode" type="radio" value="recommended"/><span class="profile-title">Recommended</span><span>Good quality and meaningful compression.</span></label>
+          <label class="profile"><input name="redactCompressionMode" type="radio" value="less"/><span class="profile-title">Less compression</span><span>High quality with lighter size reduction.</span></label>
+          <label class="profile custom-profile"><input name="redactCompressionMode" type="radio" value="custom"/><span class="profile-title">Custom target range</span><div class="two-col"><label class="field"><span>Min MB</span><input id="redactTargetMinMb" min="0.05" placeholder="1.5" step="0.05" type="number"/></label><label class="field"><span>Max MB</span><input id="redactTargetMaxMb" min="0.05" placeholder="2.0" step="0.05" type="number"/></label></div></label>
+        </div>
+        <p class="helper" id="redactCompressCapability">The redacted PDF is preserved if integrated compression cannot run.</p>
+      </div>
+    </div>
+
+    <div class="workflow-addon" data-addon="protect">
+      <div class="workflow-addon-header">
+        <div aria-controls="redactProtectBody" aria-expanded="false" class="workflow-addon-toggle" role="button" tabindex="0">
+          <input aria-label="Enable protection" id="redactProtectEnabled" type="checkbox"/>
+          <span><strong>Protect after redact</strong><small>Apply AES-256 password protection after all editing.</small></span><span class="workflow-order-index">3</span>
+        </div>
+      </div>
+      <div class="workflow-addon-body hidden" id="redactProtectBody"><div class="two-col"><label class="field"><span>Password</span><input autocomplete="new-password" id="redactProtectPassword" type="password"/></label><label class="field"><span>Confirm password</span><input autocomplete="new-password" id="redactProtectConfirm" type="password"/></label></div></div>
+    </div>
+
+    <div class="workflow-addon compact-addon" data-addon="sha256">
+      <div class="workflow-addon-toggle" role="group"><input aria-label="Enable SHA-256 generation" id="redactHashEnabled" type="checkbox"/><span><strong>Generate SHA-256</strong><small>Calculated from the exact final artifact.</small></span><span class="workflow-order-index">4</span></div>
+    </div>
+    <div class="workflow-order-summary" id="redactExecutionOrder"><strong>Execution order</strong><span>Redact</span></div>
+  </section>
+
+  <div class="action-row redact-run-row hidden" id="redactRunRow"><button class="btn primary redact-apply-button" id="redactApplyBtn" type="button">Apply Redaction</button></div>
+  <div class="status hidden" id="redactStatus"></div>
+
+  <section class="workflow-result hidden" id="redactWorkflowResult">
+    <div class="workflow-result-head"><div><span class="workflow-result-check">✓</span><div><strong>Secure redaction complete</strong><span id="redactResultMeta"></span></div></div><span class="workflow-stage-badge" id="redactVerificationBadge">Verified</span></div>
+    <div class="redact-verification" id="redactVerification"></div>
+    <div class="hash-output workflow-hash hidden" id="redactResultHash"></div>
+    <div class="action-row workflow-result-actions"><button class="btn secondary" id="redactDownload" type="button">Download PDF</button><button class="btn secondary" id="redactFinish" type="button">Finish &amp; clear temporary files</button></div>
+    <div class="workflow-continue-heading" id="redactContinueHeading"><strong>Continue editing</strong><span>The sanitized PDF opens already loaded. No upload is repeated.</span></div>
+    <div class="workflow-destination-grid" id="redactContinueGrid">
+      <button class="workflow-destination" data-destination="watermark" type="button"><strong>Add watermark</strong><span>Brand the sanitized PDF</span></button>
+      <button class="workflow-destination" data-destination="split" type="button"><strong>Split PDF</strong><span>Create sanitized derivatives</span></button>
+      <button class="workflow-destination" data-destination="extract-pages" type="button"><strong>Extract pages</strong><span>Share selected safe pages</span></button>
+      <button class="workflow-destination" data-destination="compare-pdf" type="button"><strong>Compare PDF</strong><span>Original versus redacted</span></button>
+      <button class="workflow-destination" data-destination="crop" type="button"><strong>Crop PDF</strong><span>Continue visual editing</span></button>
+    </div>
+    <p class="helper hidden" id="redactProtectedTerminal">This artifact is protected. Download it, or unlock it before further editing.</p>
+  </section>
+</section>

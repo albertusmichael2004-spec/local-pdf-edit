@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import sys
 
@@ -25,11 +26,15 @@ def persistent_data_root() -> Path:
     """Writable data directory that survives app restarts.
 
     In source mode it lives beside the source tree. In a portable PyInstaller
-    build it lives beside LocalPDFWorkbench.exe, not inside the temporary
-    _MEIPASS extraction directory.
+    build it lives in the current user's Local AppData directory so an install
+    under Program Files never needs runtime elevation.
     """
     if getattr(sys, "frozen", False):
-        root = Path(sys.executable).resolve().parent / "data"
+        local_app_data = os.environ.get("LOCALAPPDATA")
+        if local_app_data:
+            root = Path(local_app_data) / "LocalPDFWorkbench"
+        else:
+            root = Path.home() / ".local-pdf-workbench"
     else:
         root = PROJECT_ROOT / "data"
     root.mkdir(parents=True, exist_ok=True)

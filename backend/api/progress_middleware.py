@@ -20,7 +20,7 @@ OPERATION_NAMES = {
     "protect": "Protecting PDF", "all-in-one": "Securing file with AES-256",
     "password-protect": "Creating protected ZIP", "create-7z": "Creating 7z archive",
     "aes256": "Encrypting with AES-256", "decrypt": "Decrypting archive",
-    "media": "Processing media", "images": "Processing images", "video": "Converting video",
+    "media": "Processing media", "probe": "Inspecting media", "images": "Processing images", "video": "Converting video",
     "audio": "Converting audio", "ebook": "Converting ebook",
 }
 
