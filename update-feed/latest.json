@@ -1,28 +1,123 @@
 {
   "product": "Local PDF Workbench",
-  "version": "4.1.3",
+  "version": "4.1.6",
+  "source_revision": "06759710c5764d618edb4c1635289751ab54a6ef",
   "installer_filename": "LocalPDFWorkbench-Setup-x64-latest.exe",
   "installer_url": "https://1drv.ms/u/c/d9725a3220ae6d84/IQBkyOtXpNEnTbSeq_7PgoFtAV8RaT1TbY5T-9krC_VVhDg",
-  "installer_sha256": "76f294971cee55a40e284032802121889bc7788606df4548e2a01b2151bb96dd",
-  "installer_size": 126402299,
-  "release_notes": "- Backend reliability and workflow improvements.\n- User interface and document workflow improvements.\n- Installer, update, and distribution improvements.\n- Regression coverage and validation updates.\n- Documentation and project guidance updates.",
+  "installer_sha256": "3e4497894d89caf1eeb46f7334f783bb1d7c93d4ec17eed22d9c407d3037841a",
+  "installer_size": 126401575,
+  "release_notes": "- Improved the interface layout and interaction flow.\n- Improved backend processing and API reliability.\n- Improved installer, update, and distribution handling.\n- Expanded regression coverage and release validation.",
   "release_notes_i18n": {
     "en": [
-      "Backend reliability and workflow improvements.",
-      "User interface and document workflow improvements.",
-      "Installer, update, and distribution improvements.",
-      "Regression coverage and validation updates.",
-      "Documentation and project guidance updates."
+      "Improved the interface layout and interaction flow.",
+      "Improved backend processing and API reliability.",
+      "Improved installer, update, and distribution handling.",
+      "Expanded regression coverage and release validation."
     ],
     "id": [
-      "Peningkatan keandalan backend dan alur kerja.",
-      "Peningkatan antarmuka dan alur kerja dokumen.",
-      "Peningkatan installer, pembaruan, dan distribusi.",
-      "Peningkatan pengujian regresi dan validasi.",
-      "Pembaruan dokumentasi dan panduan proyek."
+      "Memperbaiki tata letak antarmuka dan alur interaksi.",
+      "Memperbaiki pemrosesan backend dan keandalan API.",
+      "Memperbaiki installer, update, dan proses distribusi.",
+      "Memperluas pengujian regresi dan validasi rilis."
     ]
   },
   "releases": [
+    {
+      "version": "4.1.6",
+      "date": "2026-09-10",
+      "changes": [
+        "Improved the interface layout and interaction flow.",
+        "Improved backend processing and API reliability.",
+        "Improved installer, update, and distribution handling.",
+        "Expanded regression coverage and release validation."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Improved the interface layout and interaction flow.",
+          "Improved backend processing and API reliability.",
+          "Improved installer, update, and distribution handling.",
+          "Expanded regression coverage and release validation."
+        ],
+        "id": [
+          "Memperbaiki tata letak antarmuka dan alur interaksi.",
+          "Memperbaiki pemrosesan backend dan keandalan API.",
+          "Memperbaiki installer, update, dan proses distribusi.",
+          "Memperluas pengujian regresi dan validasi rilis."
+        ]
+      }
+    },
+    {
+      "version": "4.1.5",
+      "date": "2026-09-10",
+      "changes": [
+        "Improved installer, update, and distribution handling.",
+        "Expanded regression coverage and release validation."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Improved installer, update, and distribution handling.",
+          "Expanded regression coverage and release validation."
+        ],
+        "id": [
+          "Memperbaiki installer, update, dan proses distribusi.",
+          "Memperluas pengujian regresi dan validasi rilis."
+        ]
+      }
+    },
+    {
+      "version": "4.1.4",
+      "date": "2026-09-10",
+      "changes": [
+        "Added or improved the All In One workflow.",
+        "Added or improved the Add Watermark workflow.",
+        "Added or improved the Compress PDF workflow.",
+        "Added or improved the Crop PDF workflow.",
+        "Added or improved the Organize PDF workflow.",
+        "Added or improved the Redact PDF workflow.",
+        "Added or improved the Rotate PDF workflow.",
+        "Added or improved the Compare PDF workflow.",
+        "Added or improved the Split workflow.",
+        "Improved the interface layout and interaction flow.",
+        "Improved backend processing and API reliability.",
+        "Improved installer, update, and distribution handling.",
+        "Expanded regression coverage and release validation.",
+        "Updated documentation and project guidance."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Added or improved the All In One workflow.",
+          "Added or improved the Add Watermark workflow.",
+          "Added or improved the Compress PDF workflow.",
+          "Added or improved the Crop PDF workflow.",
+          "Added or improved the Organize PDF workflow.",
+          "Added or improved the Redact PDF workflow.",
+          "Added or improved the Rotate PDF workflow.",
+          "Added or improved the Compare PDF workflow.",
+          "Added or improved the Split workflow.",
+          "Improved the interface layout and interaction flow.",
+          "Improved backend processing and API reliability.",
+          "Improved installer, update, and distribution handling.",
+          "Expanded regression coverage and release validation.",
+          "Updated documentation and project guidance."
+        ],
+        "id": [
+          "Menambahkan atau memperbaiki alur All In One.",
+          "Menambahkan atau memperbaiki alur Add Watermark.",
+          "Menambahkan atau memperbaiki alur Compress PDF.",
+          "Menambahkan atau memperbaiki alur Crop PDF.",
+          "Menambahkan atau memperbaiki alur Organize PDF.",
+          "Menambahkan atau memperbaiki alur Redact PDF.",
+          "Menambahkan atau memperbaiki alur Rotate PDF.",
+          "Menambahkan atau memperbaiki alur Compare PDF.",
+          "Menambahkan atau memperbaiki alur Split.",
+          "Memperbaiki tata letak antarmuka dan alur interaksi.",
+          "Memperbaiki pemrosesan backend dan keandalan API.",
+          "Memperbaiki installer, update, dan proses distribusi.",
+          "Memperluas pengujian regresi dan validasi rilis.",
+          "Memperbarui dokumentasi dan panduan proyek."
+        ]
+      }
+    },
     {
       "version": "4.1.3",
       "date": "2026-09-09",
@@ -108,5 +203,5 @@
       }
     }
   ],
-  "published_at": "2026-09-09T19:14:46.113565+00:00"
+  "published_at": "2026-09-10T04:03:39.326360+00:00"
 }
