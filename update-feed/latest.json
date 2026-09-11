@@ -1,20 +1,36 @@
 {
   "product": "Local PDF Workbench",
-  "version": "4.1.6",
-  "source_revision": "06759710c5764d618edb4c1635289751ab54a6ef",
+  "version": "4.1.7",
+  "source_revision": "bc24a3e3b664676afc1f2abba950c1328bc09f3d",
   "installer_filename": "LocalPDFWorkbench-Setup-x64-latest.exe",
   "installer_url": "https://1drv.ms/u/c/d9725a3220ae6d84/IQBkyOtXpNEnTbSeq_7PgoFtAV8RaT1TbY5T-9krC_VVhDg",
-  "installer_sha256": "3e4497894d89caf1eeb46f7334f783bb1d7c93d4ec17eed22d9c407d3037841a",
-  "installer_size": 126401575,
-  "release_notes": "- Improved the interface layout and interaction flow.\n- Improved backend processing and API reliability.\n- Improved installer, update, and distribution handling.\n- Expanded regression coverage and release validation.",
+  "installer_sha256": "3b73cad7081f670e4452e92d005691a8869d045332b53b6ba7e3537ac046875c",
+  "installer_size": 126454074,
+  "release_notes": "- Added or improved the Html To PDF workflow.\n- Added or improved the All In One workflow.\n- Added or improved the Compare Sha256 workflow.\n- Added or improved the Extract Archive workflow.\n- Added or improved the Sha256 File workflow.\n- Added or improved the Shared.js workflow.\n- Added or improved the Organize PDF workflow.\n- Added or improved the Redact PDF workflow.\n- Improved the interface layout and interaction flow.\n- Improved backend processing and API reliability.\n- Improved installer, update, and distribution handling.\n- Expanded regression coverage and release validation.",
   "release_notes_i18n": {
     "en": [
+      "Added or improved the Html To PDF workflow.",
+      "Added or improved the All In One workflow.",
+      "Added or improved the Compare Sha256 workflow.",
+      "Added or improved the Extract Archive workflow.",
+      "Added or improved the Sha256 File workflow.",
+      "Added or improved the Shared.js workflow.",
+      "Added or improved the Organize PDF workflow.",
+      "Added or improved the Redact PDF workflow.",
       "Improved the interface layout and interaction flow.",
       "Improved backend processing and API reliability.",
       "Improved installer, update, and distribution handling.",
       "Expanded regression coverage and release validation."
     ],
     "id": [
+      "Menambahkan atau memperbaiki alur Html To PDF.",
+      "Menambahkan atau memperbaiki alur All In One.",
+      "Menambahkan atau memperbaiki alur Compare Sha256.",
+      "Menambahkan atau memperbaiki alur Extract Archive.",
+      "Menambahkan atau memperbaiki alur Sha256 File.",
+      "Menambahkan atau memperbaiki alur Shared.js.",
+      "Menambahkan atau memperbaiki alur Organize PDF.",
+      "Menambahkan atau memperbaiki alur Redact PDF.",
       "Memperbaiki tata letak antarmuka dan alur interaksi.",
       "Memperbaiki pemrosesan backend dan keandalan API.",
       "Memperbaiki installer, update, dan proses distribusi.",
@@ -22,6 +38,54 @@
     ]
   },
   "releases": [
+    {
+      "version": "4.1.7",
+      "date": "2026-09-11",
+      "changes": [
+        "Added or improved the Html To PDF workflow.",
+        "Added or improved the All In One workflow.",
+        "Added or improved the Compare Sha256 workflow.",
+        "Added or improved the Extract Archive workflow.",
+        "Added or improved the Sha256 File workflow.",
+        "Added or improved the Shared.js workflow.",
+        "Added or improved the Organize PDF workflow.",
+        "Added or improved the Redact PDF workflow.",
+        "Improved the interface layout and interaction flow.",
+        "Improved backend processing and API reliability.",
+        "Improved installer, update, and distribution handling.",
+        "Expanded regression coverage and release validation."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Added or improved the Html To PDF workflow.",
+          "Added or improved the All In One workflow.",
+          "Added or improved the Compare Sha256 workflow.",
+          "Added or improved the Extract Archive workflow.",
+          "Added or improved the Sha256 File workflow.",
+          "Added or improved the Shared.js workflow.",
+          "Added or improved the Organize PDF workflow.",
+          "Added or improved the Redact PDF workflow.",
+          "Improved the interface layout and interaction flow.",
+          "Improved backend processing and API reliability.",
+          "Improved installer, update, and distribution handling.",
+          "Expanded regression coverage and release validation."
+        ],
+        "id": [
+          "Menambahkan atau memperbaiki alur Html To PDF.",
+          "Menambahkan atau memperbaiki alur All In One.",
+          "Menambahkan atau memperbaiki alur Compare Sha256.",
+          "Menambahkan atau memperbaiki alur Extract Archive.",
+          "Menambahkan atau memperbaiki alur Sha256 File.",
+          "Menambahkan atau memperbaiki alur Shared.js.",
+          "Menambahkan atau memperbaiki alur Organize PDF.",
+          "Menambahkan atau memperbaiki alur Redact PDF.",
+          "Memperbaiki tata letak antarmuka dan alur interaksi.",
+          "Memperbaiki pemrosesan backend dan keandalan API.",
+          "Memperbaiki installer, update, dan proses distribusi.",
+          "Memperluas pengujian regresi dan validasi rilis."
+        ]
+      }
+    },
     {
       "version": "4.1.6",
       "date": "2026-09-10",
@@ -203,5 +267,5 @@
       }
     }
   ],
-  "published_at": "2026-09-10T04:03:39.326360+00:00"
+  "published_at": "2026-09-11T16:19:35.059517+00:00"
 }
