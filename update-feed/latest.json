@@ -1,43 +1,122 @@
 {
   "product": "Local PDF Workbench",
-  "version": "4.1.7",
-  "source_revision": "bc24a3e3b664676afc1f2abba950c1328bc09f3d",
+  "version": "5.1.1",
+  "source_revision": "372036865c13894a317748412453c8c4bfc557f2",
+  "platform": "windows-x64",
   "installer_filename": "LocalPDFWorkbench-Setup-x64-latest.exe",
   "installer_url": "https://1drv.ms/u/c/d9725a3220ae6d84/IQBkyOtXpNEnTbSeq_7PgoFtAV8RaT1TbY5T-9krC_VVhDg",
-  "installer_sha256": "3b73cad7081f670e4452e92d005691a8869d045332b53b6ba7e3537ac046875c",
-  "installer_size": 126454074,
-  "release_notes": "- Added or improved the Html To PDF workflow.\n- Added or improved the All In One workflow.\n- Added or improved the Compare Sha256 workflow.\n- Added or improved the Extract Archive workflow.\n- Added or improved the Sha256 File workflow.\n- Added or improved the Shared.js workflow.\n- Added or improved the Organize PDF workflow.\n- Added or improved the Redact PDF workflow.\n- Improved the interface layout and interaction flow.\n- Improved backend processing and API reliability.\n- Improved installer, update, and distribution handling.\n- Expanded regression coverage and release validation.",
+  "installer_sha256": "a52ef3f8c361357ab0f6485bc4d023c3db2c047704037d1430c3d9ed3392fcad",
+  "installer_size": 226050521,
+  "release_notes": "- Added or improved the PDF To Markdown workflow.\n- Added or improved the Html To PDF workflow.\n- Added or improved the All In One workflow.\n- Added or improved the Compare Sha256 workflow.\n- Added or improved the Extract Archive workflow.\n- Added or improved the Sha256 File workflow.\n- Added or improved the Shared.js workflow.\n- Added or improved the Add Watermark workflow.\n- Added or improved the Crop PDF workflow.\n- Added or improved the Organize PDF workflow.\n- Added or improved the Redact PDF workflow.\n- Added or improved the Rotate PDF workflow.\n- Added or improved the Media Converter workflow.\n- Added or improved the Metadata Editor workflow.\n- Added or improved the Merge workflow.\n- Improved the interface layout and interaction flow.\n- Improved backend processing and API reliability.\n- Improved installer, update, and distribution handling.",
   "release_notes_i18n": {
     "en": [
+      "Added or improved the PDF To Markdown workflow.",
       "Added or improved the Html To PDF workflow.",
       "Added or improved the All In One workflow.",
       "Added or improved the Compare Sha256 workflow.",
       "Added or improved the Extract Archive workflow.",
       "Added or improved the Sha256 File workflow.",
       "Added or improved the Shared.js workflow.",
+      "Added or improved the Add Watermark workflow.",
+      "Added or improved the Crop PDF workflow.",
       "Added or improved the Organize PDF workflow.",
       "Added or improved the Redact PDF workflow.",
+      "Added or improved the Rotate PDF workflow.",
+      "Added or improved the Media Converter workflow.",
+      "Added or improved the Metadata Editor workflow.",
+      "Added or improved the Merge workflow.",
       "Improved the interface layout and interaction flow.",
       "Improved backend processing and API reliability.",
-      "Improved installer, update, and distribution handling.",
-      "Expanded regression coverage and release validation."
+      "Improved installer, update, and distribution handling."
     ],
     "id": [
+      "Menambahkan atau memperbaiki alur PDF To Markdown.",
       "Menambahkan atau memperbaiki alur Html To PDF.",
       "Menambahkan atau memperbaiki alur All In One.",
       "Menambahkan atau memperbaiki alur Compare Sha256.",
       "Menambahkan atau memperbaiki alur Extract Archive.",
       "Menambahkan atau memperbaiki alur Sha256 File.",
       "Menambahkan atau memperbaiki alur Shared.js.",
+      "Menambahkan atau memperbaiki alur Add Watermark.",
+      "Menambahkan atau memperbaiki alur Crop PDF.",
       "Menambahkan atau memperbaiki alur Organize PDF.",
       "Menambahkan atau memperbaiki alur Redact PDF.",
+      "Menambahkan atau memperbaiki alur Rotate PDF.",
+      "Menambahkan atau memperbaiki alur Media Converter.",
+      "Menambahkan atau memperbaiki alur Metadata Editor.",
+      "Menambahkan atau memperbaiki alur Merge.",
       "Memperbaiki tata letak antarmuka dan alur interaksi.",
       "Memperbaiki pemrosesan backend dan keandalan API.",
-      "Memperbaiki installer, update, dan proses distribusi.",
-      "Memperluas pengujian regresi dan validasi rilis."
+      "Memperbaiki installer, update, dan proses distribusi."
     ]
   },
   "releases": [
+    {
+      "version": "5.1.1",
+      "date": "2026-09-21",
+      "changes": [
+        "Added or improved the PDF To Markdown workflow.",
+        "Added or improved the Html To PDF workflow.",
+        "Added or improved the All In One workflow.",
+        "Added or improved the Compare Sha256 workflow.",
+        "Added or improved the Extract Archive workflow.",
+        "Added or improved the Sha256 File workflow.",
+        "Added or improved the Shared.js workflow.",
+        "Added or improved the Add Watermark workflow.",
+        "Added or improved the Crop PDF workflow.",
+        "Added or improved the Organize PDF workflow.",
+        "Added or improved the Redact PDF workflow.",
+        "Added or improved the Rotate PDF workflow.",
+        "Added or improved the Media Converter workflow.",
+        "Added or improved the Metadata Editor workflow.",
+        "Added or improved the Merge workflow.",
+        "Improved the interface layout and interaction flow.",
+        "Improved backend processing and API reliability.",
+        "Improved installer, update, and distribution handling."
+      ],
+      "changes_i18n": {
+        "en": [
+          "Added or improved the PDF To Markdown workflow.",
+          "Added or improved the Html To PDF workflow.",
+          "Added or improved the All In One workflow.",
+          "Added or improved the Compare Sha256 workflow.",
+          "Added or improved the Extract Archive workflow.",
+          "Added or improved the Sha256 File workflow.",
+          "Added or improved the Shared.js workflow.",
+          "Added or improved the Add Watermark workflow.",
+          "Added or improved the Crop PDF workflow.",
+          "Added or improved the Organize PDF workflow.",
+          "Added or improved the Redact PDF workflow.",
+          "Added or improved the Rotate PDF workflow.",
+          "Added or improved the Media Converter workflow.",
+          "Added or improved the Metadata Editor workflow.",
+          "Added or improved the Merge workflow.",
+          "Improved the interface layout and interaction flow.",
+          "Improved backend processing and API reliability.",
+          "Improved installer, update, and distribution handling."
+        ],
+        "id": [
+          "Menambahkan atau memperbaiki alur PDF To Markdown.",
+          "Menambahkan atau memperbaiki alur Html To PDF.",
+          "Menambahkan atau memperbaiki alur All In One.",
+          "Menambahkan atau memperbaiki alur Compare Sha256.",
+          "Menambahkan atau memperbaiki alur Extract Archive.",
+          "Menambahkan atau memperbaiki alur Sha256 File.",
+          "Menambahkan atau memperbaiki alur Shared.js.",
+          "Menambahkan atau memperbaiki alur Add Watermark.",
+          "Menambahkan atau memperbaiki alur Crop PDF.",
+          "Menambahkan atau memperbaiki alur Organize PDF.",
+          "Menambahkan atau memperbaiki alur Redact PDF.",
+          "Menambahkan atau memperbaiki alur Rotate PDF.",
+          "Menambahkan atau memperbaiki alur Media Converter.",
+          "Menambahkan atau memperbaiki alur Metadata Editor.",
+          "Menambahkan atau memperbaiki alur Merge.",
+          "Memperbaiki tata letak antarmuka dan alur interaksi.",
+          "Memperbaiki pemrosesan backend dan keandalan API.",
+          "Memperbaiki installer, update, dan proses distribusi."
+        ]
+      }
+    },
     {
       "version": "4.1.7",
       "date": "2026-09-11",
@@ -267,5 +346,15 @@
       }
     }
   ],
-  "published_at": "2026-09-11T16:19:35.059517+00:00"
+  "installers": {
+    "windows-x64": {
+      "version": "5.1.1",
+      "filename": "LocalPDFWorkbench-Setup-x64-latest.exe",
+      "versioned_filename": "LocalPDFWorkbench-Setup-x64-v5.1.1.exe",
+      "url": "https://1drv.ms/u/c/d9725a3220ae6d84/IQBkyOtXpNEnTbSeq_7PgoFtAV8RaT1TbY5T-9krC_VVhDg",
+      "sha256": "a52ef3f8c361357ab0f6485bc4d023c3db2c047704037d1430c3d9ed3392fcad",
+      "size": 226050521
+    }
+  },
+  "published_at": "2026-09-21T04:51:08.819705+00:00"
 }
